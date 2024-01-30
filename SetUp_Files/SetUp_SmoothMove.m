@@ -1,0 +1,173 @@
+clear all
+
+%% Generate Resource
+Resource.Parameters.numTransmit = 32; % no. of transmit channels
+Resource.Parameters.connector = 1; % trans. connector to use (V 256).
+Resouce.Parameters.speedOfSound = 1481;
+
+%% Generate Trans
+load Trans_Ring
+
+%% Physical Parameters
+wavelength = Resouce.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
+
+H = 30*1e-3; %PD depth in m
+H_wavelengths = H/wavelength; % PD depth in wavelengths
+
+probeDiameter = 70e3/wavelength; % In wavelengths
+dishDiameter = 39e3/wavelength;
+bigDishDIAm = 90e3/wavelength;
+
+%% TPC Settings
+TPC(5).maxHighVoltage = 20;
+
+%% Generate TW
+pulseLength = 20; % ms
+nHalfCycles = int32(2*pulseLength*Trans.frequency);
+TW(1).type = 'parametric'; 
+TW(1).Parameters = [Trans.frequency,1,10,1]; % A, B, C, D
+TW(1).equalize = 0;
+
+%% Specify Default TX structure array. 
+defaultLoc = 0; % default tweezer position in mm
+
+[DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc);
+TX = DefaultTX;
+
+%% Generate Sequence Controls
+SeqControl = genSeqControls;
+
+%% Generate Default Event Sequence
+
+[InitialiseEvent,n1] = genInitialiseEvent();
+[DefaultEvent,n2] = genDefaultEvent(naDefault);
+Event = [InitialiseEvent,DefaultEvent];
+
+%% Save To .mat File
+savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
+% Save all the structures to a .mat file.
+save(strcat(savedir,'SmoothMove')); 
+
+%% Functions
+function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
+    
+    %Specify largest steering step
+    wavelength = evalin('base','wavelength');
+    dr = wavelength/10;
+    if dr>wavelength/2
+        disp('ERROR:dr too large!')
+        DISP('-------------------')
+    end
+    
+    H = evalin('base','H'); % m
+    r0 = currentLoc; %mm
+    rTarget = nextLoc; % mm
+    
+    distance = (rTarget - r0)/1e3 ;%now to m
+    nLargestSteps = floor(distance/dr);
+    N = nLargestSteps+1;
+    
+    %Specify list of positions to move through
+        % Includes r0 position (could be removed if move needs to be faster).
+    rs = dr*(0:N) + (r0/1000);
+    rs(N+1) = rTarget/1000;% x coords of 1st to last position
+    thetasMove = pi/2 - cart2pol(rs,H);
+    
+    naMove = length(thetasMove);
+    Trans = evalin('base','Trans');
+    TX = repmat(struct('waveform', 1, ...
+                       'Origin', zeros(1,3), ...
+                       'focus', 0, ...
+                       'Steer', [0.0,0.0], ...
+                       'Apod', ones(1,Trans.numelements), ...
+                       'Delay', zeros(1,Trans.numelements)),...
+                       1,2*naMove); % matrix shape  
+    
+    [RH_VortexDelay,~] = compDelayVortex(Trans.ElementPos,0);
+    LH_VortexDelay = flip(RH_VortexDelay);
+    
+    for j = 1:naMove
+        TX(j).Steer = [thetasMove(j),0];
+        TX(j).Delay = RH_VortexDelay'; 
+    end
+    for j = naMove+1:(2*naMove)
+        TX(j).Steer = [thetasMove(j-naMove),0];
+        TX(j).Delay = LH_VortexDelay'; 
+    end
+    
+end
+
+function SeqControl = genSeqControls
+SeqControl(1).command = 'setTPCProfile';
+SeqControl(1).argument = 5;
+SeqControl(1).condition = 'immediate';
+
+SeqControl(2).command = 'noop';
+SeqControl(2).argument = 50000 ;% 5 ms
+
+SeqControl(3).command = 'timeToNextEB';
+SeqControl(3).argument = 360; % us pause between pulses (10 is minimum specifiable)
+
+SeqControl(4).command = 'returnToMatlab';
+
+SeqControl(5).command = 'jump'; 
+SeqControl(5).argument = 4;
+SeqControl(5).condition = 'exitAfterJump';
+
+SeqControl(7).command = 'triggerOut';
+end
+
+function [Event,n] = genInitialiseEvent()
+n=1;
+Event(n).info = 'select TPC profile';
+Event(n).tx = 0;
+Event(n).rcv = 0;
+Event(n).recon = 0;
+Event(n).process = 0;
+Event(n).seqControl = 6;
+n = n+1;
+
+Event(n).info = 'Charge Capacitor'; 
+Event(n).tx = 0;
+Event(n).rcv = 0; 
+Event(n).recon = 0; 
+Event(n).process = 0; 
+Event(n).seqControl = 2; 
+n = n+1;
+
+Event(n).info = 'Engage Extended Transmit'; 
+Event(n).tx = 0;
+Event(n).rcv = 0; 
+Event(n).recon = 0; 
+Event(n).process = 0; 
+Event(n).seqControl = 1; 
+end
+
+function [Event,n] = genDefaultEvent(naDefault)
+n=1;
+Event(n).info = 'First Transmit'; 
+Event(n).tx = 1; 
+Event(n).rcv = 0; 
+Event(n).recon = 0; 
+Event(n).process = 0; 
+Event(n).seqControl = [7,3]; 
+n = n+1;
+
+Event(n).info = 'Transmit'; 
+Event(n).tx = 1+naDefault; 
+Event(n).rcv = 0; 
+Event(n).recon = 0; 
+Event(n).process = 0; 
+Event(n).seqControl = [3,5]; 
+end
+
+
+
+
+
+
+
+
+
+
+

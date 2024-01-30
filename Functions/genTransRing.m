@@ -29,8 +29,6 @@ for i = elementIds
     elementCoordsCart(i,5) = (i-1)*elementSpacing_rad;
     [elementCoordsCart(i,1),elementCoordsCart(i,2)] = pol2cart(elementCoordsCart(i,5),Rc);
 end
-
-Trans.ElementPos(:,5) = zeros(32,1);
 % --------------------------
 
 
@@ -59,7 +57,10 @@ Trans.connType = -1; % automatically detect UTA Module type
 Trans.spacingMm = 3; % centre to centre (ctc)
 Trans.spacing = Trans.spacingMm/lambda_mm;
 
+Trans.ElementPos(:,5) = zeros(32,1);
 scatter(Trans.ElementPos(:,1),Trans.ElementPos(:,2))
 pbaspect([1 1 1])
 
-save("Barney/data_files/Trans_Ring")
+% Save all the structures to a .mat file.
+savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\TransducerData\';
+save(strcat(savedir,'Trans_Ring')); 
