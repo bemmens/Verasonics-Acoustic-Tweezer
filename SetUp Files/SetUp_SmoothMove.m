@@ -29,6 +29,8 @@ TW(1).Parameters = [Trans.frequency,1,10,1]; % A, B, C, D
 TW(1).equalize = 0;
 
 %% Specify Default TX structure array. 
+rmin = -30; % max steering range in mm
+rmax = 30;
 defaultLoc = 0; % default tweezer position in mm
 
 [DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
@@ -38,10 +40,18 @@ TX = DefaultTX;
 SeqControl = genSeqControls;
 
 %% Generate Default Event Sequence
-
 [InitialiseEvent,n1] = genInitialiseEvent();
 [DefaultEvent,n2] = genDefaultEvent(naDefault);
 Event = [InitialiseEvent,DefaultEvent];
+
+%% Create UI Controls
+sliderGranularity = 100;
+import vsv.seq.uicontrol.VsSliderControl
+UI(1).Control = VsSliderControl('LocationCode','UserA1',...
+                 'Label','Vortex Loc (mm)',... 
+                 'SliderMinMaxVal',[rmin,rmax,0],... % min,max,default in mm
+                 'SliderStep', [1/sliderGranularity,5/sliderGranularity]);   
+%UI(1).Callback = @defSteering;
 
 %% Save To .mat File
 savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
