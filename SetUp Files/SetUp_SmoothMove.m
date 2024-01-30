@@ -31,7 +31,7 @@ TW(1).equalize = 0;
 %% Specify Default TX structure array. 
 defaultLoc = 0; % default tweezer position in mm
 
-[DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc);
+[DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
 TX = DefaultTX;
 
 %% Generate Sequence Controls
@@ -50,7 +50,8 @@ save(strcat(savedir,'SmoothMove'));
 
 %% Functions
 function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
-    
+    % currentLoc and nextLoc in mm
+
     %Specify largest steering step
     wavelength = evalin('base','wavelength');
     dr = wavelength/10;
@@ -98,23 +99,26 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
 end
 
 function SeqControl = genSeqControls
+
 SeqControl(1).command = 'setTPCProfile';
-SeqControl(1).argument = 5;
+SeqControl(1).argument = 1;
 SeqControl(1).condition = 'immediate';
 
-SeqControl(2).command = 'noop';
-SeqControl(2).argument = 50000 ;% 5 ms
+SeqControl(2).command = 'setTPCProfile';
+SeqControl(2).argument = 5;
+SeqControl(2).condition = 'immediate';
 
-SeqControl(3).command = 'timeToNextEB';
-SeqControl(3).argument = 360; % us pause between pulses (10 is minimum specifiable)
+SeqControl(3).command = 'noop';
+SeqControl(3).argument = 50000 ;% 5 ms
 
-SeqControl(4).command = 'returnToMatlab';
+SeqControl(4).command = 'timeToNextEB';
+SeqControl(4).argument = 360; % us pause between pulses (10 is minimum specifiable)
 
 SeqControl(5).command = 'jump'; 
 SeqControl(5).argument = 4;
 SeqControl(5).condition = 'exitAfterJump';
 
-SeqControl(7).command = 'triggerOut';
+SeqControl(6).command = 'triggerOut';
 end
 
 function [Event,n] = genInitialiseEvent()
@@ -124,7 +128,7 @@ Event(n).tx = 0;
 Event(n).rcv = 0;
 Event(n).recon = 0;
 Event(n).process = 0;
-Event(n).seqControl = 6;
+Event(n).seqControl = 1;
 n = n+1;
 
 Event(n).info = 'Charge Capacitor'; 
@@ -140,7 +144,7 @@ Event(n).tx = 0;
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
-Event(n).seqControl = 1; 
+Event(n).seqControl = 3; 
 end
 
 function [Event,n] = genDefaultEvent(naDefault)
@@ -150,7 +154,7 @@ Event(n).tx = 1;
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
-Event(n).seqControl = [7,3]; 
+Event(n).seqControl = [4,6]; 
 n = n+1;
 
 Event(n).info = 'Transmit'; 
@@ -158,7 +162,7 @@ Event(n).tx = 1+naDefault;
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
-Event(n).seqControl = [3,5]; 
+Event(n).seqControl = [4,5]; 
 end
 
 
