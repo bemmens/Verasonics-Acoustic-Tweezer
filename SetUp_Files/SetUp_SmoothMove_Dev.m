@@ -55,25 +55,27 @@ TW(1).equalize = 0;
 rmin = -30; % mm
 rmax = 30;
 N = 10; % Number of positions available
-currentLoc = 10;
-nextLoc = 11;
-TXStationary = genTXSationary(rmin,rmax,N);
-TXMove = genTXMove(currentLoc,nextLoc);
-TX = [TXStationary,TXStationary];
 
-%currentLoc = 0*1e-3; % current steering position in m
+[TXStationary,rs] = genTXSationary(rmin,rmax,N);
+TX = TXStationary;
+
+%currentLoc = 10;
+%nextLoc = 11;
+%TXMove = genTXMove(currentLoc,nextLoc);
+%TX = [TXStationary,TXStationary];
 %nextLoc = 0; % next loc called for by slider
 
 %% Generate Sequence Controls
 SeqControl = genSeqControls;
 
 %% Generate Initial Event Sequence
-[EventInitial,n1] = genEventInitial();
-[EventOldStationary,n2] = genEventOldStationary();
-Event = [EventInitial,EventOldStationary];
-%EventGUI
 
+currentLoc = 0*1e-3; % current steering position in m
+currentTX = 0; % index into TX struct for currentLoc
 
+[EventInitialise,n1] = genEventInitialise();
+[EventOldStationary,n2] = genEventOldStationary(currentTX,n1);
+Event = [EventInitialise,EventOldStationary];
 
 %[EventMove,n3] = genEventMove();
 %[EventNewSationary,n4] = genEventNewStationary();
@@ -137,7 +139,7 @@ function out = defSteering(~,~,nextLoc)
     out = 1;
 end
 
-function [Event,n] = genEventInitial()
+function [Event,n] = genEventInitialise()
 n=1;
 Event(n).info = 'select TPC profile';
 Event(n).tx = 0;
@@ -163,15 +165,12 @@ Event(n).process = 0;
 Event(n).seqControl = [1]; 
 end
 
-function [Event,n] = genEventOldStationary(currentLoc)
+function [Event,n] = genEventOldStationary(currentTX,n)
 
 TTNB = evalin('base','SeqControl(3).argument');
 
-
-%n_TX0 = n;
-%assignin('base',"n_TX0",n_TX0) 
 Event(n).info = 'First Transmit'; 
-Event(n).tx = TxSlider; 
+Event(n).tx = currentTX; 
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
@@ -179,7 +178,7 @@ Event(n).seqControl = [7,3];
 n = n+1;
 
 Event(n).info = 'Transmit'; 
-Event(n).tx = TxSlider+naStationary; 
+Event(n).tx = currentTX+naStationary; 
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
@@ -189,7 +188,7 @@ n = n+1;
 usPerCallback = 5000-(4*TTNB);
 %nTransmitsPerCallback = 3;
 nTransmitsPerCallback = ceil(usPerCallback/TTNB/2); % nTransmitsPerCallback only counts on handedness so nTX will be twice as high
-assignin('base','nTransmitsPerCallback',nTransmitsPerCallback)
+%assignin('base','nTransmitsPerCallback',nTransmitsPerCallback)
 for i = 1:nTransmitsPerCallback
     Event(n).info = 'Transmit'; 
     Event(n).tx = TxSlider; 
@@ -226,7 +225,8 @@ Event(n).seqControl = [3,8]; % If bFlag~=0 jump to smoothMove Events
     SeqControl(8).condition = bFlag;
     SeqControl(8).argument = moveEventIdx; 
 %n_TXEnd = n;
-n = n+1;
+
+n = n+1; % return n for next event generation function
 end
 
 %{
@@ -263,7 +263,7 @@ SeqControl(6).condition = 'immediate';
 SeqControl(7).command = 'triggerOut';
 end
 
-function TX = genTXMove(currentLoc,nextLoc)
+function [TX,rs] = genTXMove(currentLoc,nextLoc)
     
     %Specify largest steering step
     wavelength = evalin('base','wavelength');
@@ -313,7 +313,7 @@ function TX = genTXMove(currentLoc,nextLoc)
     
 end
 
-function TX = genTXSationary(rmin,rmax,N)
+function [TX,rs] = genTXSationary(rmin,rmax,N)
     % N number of possible positions should be odd to allow central
     % position
     %rmin = -30; % mm
