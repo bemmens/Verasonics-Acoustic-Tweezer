@@ -25,13 +25,14 @@ TPC(5).maxHighVoltage = 20;
 pulseLength = 20; % ms
 nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
-TW(1).Parameters = [Trans.frequency,1,10,1]; % A, B, C, D
+TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D
 TW(1).equalize = 0;
 
 %% Specify Default TX structure array. 
 rmin = -30; % max steering range in mm
 rmax = 30;
-defaultLoc = 0; % default tweezer position in mm
+defaultLoc = 10; % default tweezer position in mm
+currentLoc = defaultLoc;
 
 [DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
 TX = DefaultTX;
@@ -49,9 +50,9 @@ sliderGranularity = 100;
 import vsv.seq.uicontrol.VsSliderControl
 UI(1).Control = VsSliderControl('LocationCode','UserA1',...
                  'Label','Vortex Loc (mm)',... 
-                 'SliderMinMaxVal',[rmin,rmax,0],... % min,max,default in mm
+                 'SliderMinMaxVal',[rmin,rmax,defaultLoc],... % min,max,default in mm
                  'SliderStep', [1/sliderGranularity,5/sliderGranularity]);   
-%UI(1).Callback = @defSteering;
+UI(1).Callback = @defMove;
 
 %% Save To .mat File
 savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
@@ -73,6 +74,10 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
     H = evalin('base','H'); % m
     r0 = currentLoc; %mm
     rTarget = nextLoc; % mm
+
+    if rTarget - r0 < 0
+        dr = -dr;
+    end
     
     distance = (rTarget - r0)/1e3 ;%now to m
     nLargestSteps = floor(distance/dr);
@@ -175,6 +180,54 @@ Event(n).process = 0;
 Event(n).seqControl = [4,5]; 
 end
 
+function defMove(~,~,UIValue)
+nextLoc = round(UIValue);
+assignin('base',"nextLoc",nextLoc)
+currentLoc = evalin('base','currentLoc');
+
+% create new TX and Event
+[TX,~,naMove] = genMoveTX(currentLoc,nextLoc);
+assignin('base',"TX",TX)
+
+[InitEvent,~] = genInitialiseEvent();
+[MoveEvent,~] = genMoveEvent(naMove);
+
+Event = [InitEvent,MoveEvent];
+assignin('base',"Event",Event)
+
+
+
+% Control update&Run
+Control = evalin('base', 'Control');
+Control.Command = 'update&Run';
+Control.Parameters = {'TX','Event'};
+assignin('base', 'Control',Control);
+end
+
+function [Event,n] = genMoveEvent(naMove)
+
+Event = repmat(struct('info','Move', ...
+                       'tx',0, ...
+                       'rcv',0, ...
+                       'recon',0, ...
+                       'process',0, ...
+                       'seqControl',4), ...
+                       1,2*naMove);
+
+rhTXidx = 1:naMove;
+lhTXidx = naMove+1:(2*naMove);
+
+n=1;
+for i = 1:naMove
+    Event(n).tx = rhTXidx(i);
+    n=n+1;
+    Event(n).tx = lhTXidx(i);
+    n=n+1;
+end
+
+Event(end).seqControl = [4,5];
+
+end
 
 
 
