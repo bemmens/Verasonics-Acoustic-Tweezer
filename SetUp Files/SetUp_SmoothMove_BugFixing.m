@@ -36,7 +36,6 @@ currentLoc = defaultLoc;
 
 [DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
 TX = DefaultTX;
-
 %% Generate Sequence Controls
 SeqControl = genSeqControls;
 
@@ -166,29 +165,21 @@ Event(n).seqControl = 3;
 end
 
 function [Event,n] = genDefaultEvent(naDefault)
-
-nTXperCallback = 2*10; % must be even
-
-Event = repmat(struct('info','Defalt Stationary', ...
-                       'tx',0, ...
-                       'rcv',0, ...
-                       'recon',0, ...
-                       'process',0, ...
-                       'seqControl',4), ...
-                       1,nTXperCallback);
-
 n=1;
-for i = 1:(nTXperCallback/2)
-    Event(n).tx = 1;
-    n=n+1;
-    Event(n).tx = 1+naDefault;
-    n=n+1;
-end
-n = n-1;
+Event(n).info = 'First Transmit'; 
+Event(n).tx = 1; 
+Event(n).rcv = 0; 
+Event(n).recon = 0; 
+Event(n).process = 0; 
+Event(n).seqControl = 4; 
+n = n+1;
 
-Event(1).info = 'First Defalt Transmit'; 
-Event(end).info = 'Last Default Transmit';
-Event(end).seqControl = [4,5]; 
+Event(n).info = 'Transmit'; 
+Event(n).tx = 1+naDefault; 
+Event(n).rcv = 0; 
+Event(n).recon = 0; 
+Event(n).process = 0; 
+Event(n).seqControl = [4,5]; 
 end
 
 function defMove(~,~,UIValue)
@@ -199,6 +190,7 @@ currentLoc = evalin('base','currentLoc');
 % create new TX and Event
 [TX,~,naMove] = genMoveTX(currentLoc,nextLoc);
 assignin('base',"TX",TX)
+size(TX)
 
 [InitEvent,n1] = genInitialiseEvent();
 [MoveEvent,n2] = genMoveEvent(naMove);
@@ -209,7 +201,7 @@ assignin('base',"SeqControl",SeqControl)
 
 Event = [InitEvent,MoveEvent,StationaryEvent];
 assignin('base',"Event",Event)
-
+max([Event.tx])
 % Control update&Run
 Control = evalin('base', 'Control');
 Control.Command = 'update&Run';
@@ -246,7 +238,7 @@ function [Event,n] = genNewStationaryEvent(naMove)
 
 nTXperCallback = 2*10; % must be even
 
-Event = repmat(struct('info','Move', ...
+Event = repmat(struct('info','Stationary', ...
                        'tx',0, ...
                        'rcv',0, ...
                        'recon',0, ...
