@@ -133,7 +133,10 @@ SeqControl(5).command = 'jump';
 SeqControl(5).argument = 4;
 SeqControl(5).condition = 'exitAfterJump';
 
-SeqControl(6).command = 'triggerOut';
+SeqControl(6).command = 'jump'; 
+SeqControl(6).condition = 'exitAfterJump';
+
+%SeqControl(7).command = 'triggerOut';
 end
 
 function [Event,n] = genInitialiseEvent()
@@ -169,7 +172,7 @@ Event(n).tx = 1;
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
-Event(n).seqControl = [4,6]; 
+Event(n).seqControl = 4; 
 n = n+1;
 
 Event(n).info = 'Transmit'; 
@@ -178,6 +181,7 @@ Event(n).rcv = 0;
 Event(n).recon = 0; 
 Event(n).process = 0; 
 Event(n).seqControl = [4,5]; 
+n = n+1;
 end
 
 function defMove(~,~,UIValue)
@@ -190,17 +194,19 @@ currentLoc = evalin('base','currentLoc');
 assignin('base',"TX",TX)
 
 [InitEvent,~] = genInitialiseEvent();
-[MoveEvent,~] = genMoveEvent(naMove);
+[MoveEvent,n2] = genMoveEvent(naMove);
+SeqControl = evalin('base','SeqControl');
+SeqControl(6).argument = n2;
+assignin('base',"SeqControl",SeqControl)
+[StationaryEvent,~] = genNewStationaryEvent(naMove);
 
-Event = [InitEvent,MoveEvent];
+Event = [InitEvent,MoveEvent,StationaryEvent];
 assignin('base',"Event",Event)
-
-
 
 % Control update&Run
 Control = evalin('base', 'Control');
 Control.Command = 'update&Run';
-Control.Parameters = {'TX','Event'};
+Control.Parameters = {'SeqControl','TX','Event'};
 assignin('base', 'Control',Control);
 end
 
@@ -229,7 +235,29 @@ Event(end).seqControl = [4,5];
 
 end
 
+function [Event,n] = genNewStationaryEvent(naMove)
 
+nTXperCallback = 2*500; % must be even
+
+Event = repmat(struct('info','Move', ...
+                       'tx',0, ...
+                       'rcv',0, ...
+                       'recon',0, ...
+                       'process',0, ...
+                       'seqControl',4), ...
+                       1,nTXperCallback);
+
+n=1;
+for i = 1:(nTXperCallback/2)
+    Event(n).tx = naMove;
+    n=n+1;
+    Event(n).tx = 2*naMove;
+    n=n+1;
+end
+
+Event(end).seqControl = [4,6]; 
+
+end
 
 
 

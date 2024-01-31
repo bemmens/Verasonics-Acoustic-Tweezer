@@ -74,6 +74,10 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
     H = evalin('base','H'); % m
     r0 = currentLoc; %mm
     rTarget = nextLoc; % mm
+
+    if rTarget - r0 < 0
+        dr = -dr;
+    end
     
     distance = (rTarget - r0)/1e3 ;%now to m
     nLargestSteps = floor(distance/dr);
@@ -129,7 +133,7 @@ SeqControl(5).command = 'jump';
 SeqControl(5).argument = 4;
 SeqControl(5).condition = 'exitAfterJump';
 
-SeqControl(6).command = 'triggerOut';
+%SeqControl(7).command = 'triggerOut';
 end
 
 function [Event,n] = genInitialiseEvent()
@@ -165,7 +169,7 @@ Event(n).tx = 1;
 Event(n).rcv = 0; 
 Event(n).recon = 0; 
 Event(n).process = 0; 
-Event(n).seqControl = [4,6]; 
+Event(n).seqControl = 4; 
 n = n+1;
 
 Event(n).info = 'Transmit'; 
@@ -174,24 +178,24 @@ Event(n).rcv = 0;
 Event(n).recon = 0; 
 Event(n).process = 0; 
 Event(n).seqControl = [4,5]; 
+n = n+1;
 end
 
 function defMove(~,~,UIValue)
-nextLoc = UIValue;
+nextLoc = round(UIValue);
 assignin('base',"nextLoc",nextLoc)
 currentLoc = evalin('base','currentLoc');
 
 % create new TX and Event
 [TX,~,naMove] = genMoveTX(currentLoc,nextLoc);
-
-
-[InitEvent,~] = genInitialiseEvent()
-[MoveEvent,~] = genMoveEvent(naMove);
-
-Event = [InitEvent,MoveEvent];
-
-% Assign new structs to base
 assignin('base',"TX",TX)
+
+[InitEvent,~] = genInitialiseEvent();
+[MoveEvent,n2] = genMoveEvent(naMove);
+SeqControl(6).argument = n2;
+[StationaryEvent,~] = genNewStationaryEvent(naMove);
+
+Event = [InitEvent,MoveEvent,StationaryEvent];
 assignin('base',"Event",Event)
 
 % Control update&Run
@@ -200,7 +204,6 @@ Control.Command = 'update&Run';
 Control.Parameters = {'TX','Event'};
 assignin('base', 'Control',Control);
 end
-
 
 function [Event,n] = genMoveEvent(naMove)
 
@@ -223,11 +226,36 @@ for i = 1:naMove
     n=n+1;
 end
 
-Event
+Event(end).seqControl = [4,5];
 
 end
 
+function [Event,n] = genNewStationaryEvent(naMove)
 
+nTXperCallback = 2*50; % must be even
+
+Event = repmat(struct('info','Move', ...
+                       'tx',0, ...
+                       'rcv',0, ...
+                       'recon',0, ...
+                       'process',0, ...
+                       'seqControl',4), ...
+                       1,nTXperCallback);
+
+n=1;
+for i = 1:(nTXperCallback/2)
+    Event(n).tx = naMove;
+    n=n+1;
+    Event(n).tx = 2*naMove;
+    n=n+1;
+end
+nCallback = n-1;
+
+Event(nCallback).seqControl = 4; 
+    SeqControl(6).command = 'jump'; 
+    SeqControl(6).condition = 'exitAfterJump';
+
+end
 
 
 
