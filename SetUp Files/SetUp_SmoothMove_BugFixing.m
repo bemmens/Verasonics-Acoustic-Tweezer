@@ -36,7 +36,6 @@ currentLoc = defaultLoc;
 
 [DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
 TX = DefaultTX;
-
 %% Generate Sequence Controls
 SeqControl = genSeqControls;
 
@@ -189,10 +188,11 @@ n = n-1;
 Event(1).info = 'First Defalt Transmit'; 
 Event(end).info = 'Last Default Transmit';
 Event(end).seqControl = [4,5]; 
+
 end
 
 function defMove(~,~,UIValue)
-nextLoc = round(UIValue);
+nextLoc = UIValue;
 assignin('base',"nextLoc",nextLoc)
 currentLoc = evalin('base','currentLoc');
 
@@ -212,9 +212,19 @@ assignin('base',"Event",Event)
 
 % Control update&Run
 Control = evalin('base', 'Control');
-Control.Command = 'update&Run';
-Control.Parameters = {'SeqControl','TX','Event'};
+Control(1).Command = 'update&Run';
+Control(1).Parameters = {'SeqControl'};
+
+Control(2).Command = 'update&Run';
+Control(2).Parameters = {'TX'};
+
+Control(3).Command = 'update&Run';
+Control(3).Parameters = {'Event'};
 assignin('base', 'Control',Control);
+
+disp('----------')
+disp('Moving to:')
+disp(nextLoc)
 end
 
 function [Event,n] = genMoveEvent(naMove)
@@ -246,7 +256,7 @@ function [Event,n] = genNewStationaryEvent(naMove)
 
 nTXperCallback = 2*10; % must be even
 
-Event = repmat(struct('info','Move', ...
+Event = repmat(struct('info','Stationary', ...
                        'tx',0, ...
                        'rcv',0, ...
                        'recon',0, ...
