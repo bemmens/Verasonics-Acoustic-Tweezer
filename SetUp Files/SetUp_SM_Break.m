@@ -112,8 +112,11 @@ assignin('base',"Event",Event)
 
 % Control update&Run
 Control = evalin('base', 'Control');
-Control.Command = 'update&Run';
-Control.Parameters = {'Event','TX'};
+Control(1).Command = 'update&Run';
+Control(1).Parameters = {'TX'};
+
+Control(2).Command = 'update&Run';
+Control(2).Parameters = {'Event'};
 assignin('base', 'Control',Control);
 end
 

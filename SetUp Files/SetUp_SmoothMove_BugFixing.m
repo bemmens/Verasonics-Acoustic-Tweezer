@@ -192,7 +192,7 @@ Event(end).seqControl = [4,5];
 end
 
 function defMove(~,~,UIValue)
-nextLoc = round(UIValue);
+nextLoc = UIValue;
 assignin('base',"nextLoc",nextLoc)
 currentLoc = evalin('base','currentLoc');
 
@@ -212,9 +212,19 @@ assignin('base',"Event",Event)
 
 % Control update&Run
 Control = evalin('base', 'Control');
-Control.Command = 'update&Run';
-Control.Parameters = {'SeqControl','TX','Event'};
+Control(1).Command = 'update&Run';
+Control(1).Parameters = {'SeqControl'};
+
+Control(2).Command = 'update&Run';
+Control(2).Parameters = {'TX'};
+
+Control(3).Command = 'update&Run';
+Control(3).Parameters = {'Event'};
 assignin('base', 'Control',Control);
+
+disp('----------')
+disp('Moving to:')
+disp(nextLoc)
 end
 
 function [Event,n] = genMoveEvent(naMove)
