@@ -62,5 +62,5 @@ scatter(Trans.ElementPos(:,1),Trans.ElementPos(:,2))
 pbaspect([1 1 1])
 
 % Save all the structures to a .mat file.
-savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\TransducerData\';
+savedir = 'C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Barney\Verasonics-Acoustic-Tweezer\TransducerData\';
 save(strcat(savedir,'Trans_Ring')); 
