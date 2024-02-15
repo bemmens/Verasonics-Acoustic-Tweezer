@@ -1,6 +1,6 @@
 function rP = BeamPattern(D,lambda)
-%Generates relangleative beam preassure between -pi/2 and pi/2 as a
-%function of wavelength (lambda) and element diameter(D).
+%Generates relative beam preassure between -pi/2 and pi/2 as a
+%function of wavelength (lambda) and element diameter(D) for a circular piston in an infinite baffle.
 %D = 3e-3;
 %lambda = 1481/1e6;
 

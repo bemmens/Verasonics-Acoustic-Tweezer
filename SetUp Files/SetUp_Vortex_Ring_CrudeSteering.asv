@@ -36,18 +36,13 @@ PData.Size(3) = 1;
 PData.Origin = [-PData.Size(1)*PData.PDelta(1)/2,PData.Size(2)*PData.PDelta(2)/2,PDepth_nW];
 
 %TPC Settings
-TPC(5).maxHighVoltage = 20;
-TPC(5).highVoltageLimit = 20;
+TPC(5).maxHighVoltage = 100;
+TPC(5).highVoltageLimit = 100;
 
 % Specify Transmit waveform structure. 
 %pulseLength = 20; % ms
 %nHalfCycles = int32(2*pulseLength*Trans.frequency);
-nHalfCycles = 450*2; % MUST BE EVEN
-if rem(nHalfCycles,2) ~= 0
-    fprintf(2,'Error: nHalfCycles must be even!\n')
-elseif rem(nHalfCycles,1) ~= 0
-    fprintf(2,'Error: nHalfCycles must be an integer!\n')
-end
+nHalfCycles = 1000;
 TW(1).type = 'parametric'; 
 TW(1).Parameters = [Trans.frequency,0.9,nHalfCycles,1]; % A, B, C, D
 TW(1).equalize = 0;
@@ -222,7 +217,6 @@ disp(strcat('Max Voltage: ',string(TPC(5).maxHighVoltage),'V'))
 disp(strcat('Duty Cycle:', string(DC),'%'))
 disp('-------------------')
 
-plot(genWvfm(TW(1).Parameters))
 %% Create UI Controls
 import vsv.seq.uicontrol.VsSliderControl
 UI(1).Control = VsSliderControl('LocationCode','UserA1',...
@@ -235,7 +229,7 @@ UI(1).Callback = @defSteering;
 %save('Barney/BarneyArchive/Barney_14Dec23/Barney/data_files/Vortex_Ring_Steerable'); 
 save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\CrudeSteer')
 disp('KerCHOW!')
-%EventAnalysisTool
+EventAnalysisTool
 %VSX
 
 function defSteering(~,~,UIValue)
