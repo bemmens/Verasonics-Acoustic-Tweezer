@@ -27,7 +27,7 @@ X = Trans.elementWidth*pi*sin(Theta);
 Trans.ElementSens = abs(cos(Theta).*(sin(X)./X)); % [1x101 double] sens. curve for single element –pi/2to+pi/2
 
 %Trans.ConnectorES   %[nx1 double] EL to ES map (see text below & sec.2.2.1) - UNSPECIFIED => Default 1->1 map
-Trans.connType = -1;     %double % specifies type of Probe connector (see text)
+Trans.connType = 12;     %double % specifies type of Probe connector (see text)
 
 %% Optional Parameters
 bandwidth = 0.02; % fraction of Hz at -3dB for smart materials W821 - double check for -6dB as requested by Vera
@@ -36,4 +36,4 @@ Trans.impedance = readmatrix("PogoPin1ResReact.xlsx"); %complex single value or 
 Trans.maxHighVoltage = 50;
 
 %% Save
-save("Verasonics-Acoustic-Tweezer\TransducerData\PogoPinTestArray.mat","Trans")
+save("Barney\Verasonics-Acoustic-Tweezer\TransducerData\PogoPinTestArray.mat","Trans")

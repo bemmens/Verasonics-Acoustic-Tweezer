@@ -64,4 +64,4 @@ Event(n+1).seqControl = [1,2]; % transfer data to host
     SeqControl(2).condition = 'exitAfterJump';
 
 %% Save all the structures to a .mat file.
-save('Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
+save('Barney\Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
