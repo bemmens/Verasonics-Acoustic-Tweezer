@@ -8,6 +8,8 @@ Resource.Parameters.connector = 1; % trans. connector to use.
 Resource.Parameters.speedOfSound = 1481;
 Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
+Resource.System.UTA = '160-SH';
+
 %% Generate Trans
 load PogoPinTestArray % need to generate
 
@@ -51,17 +53,16 @@ for n = 2:100;
         SeqControl(1).argument = 50000; % 50 ms pause between pulses
 end
 
-Event(n+1).info = 'nth TX'; 
-Event(n+1).tx = 1; % use 1st TX structure.
+Event(n+1).info = 'Check MatLab'; 
+Event(n+1).tx = 0; % use 1st TX structure.
 Event(n+1).rcv = 0; 
 Event(n+1).recon = 0; % no reconstruction.
 Event(n+1).process = 0; % no processing
-Event(n+1).seqControl = [1,2]; % transfer data to host
-    SeqControl(1).command = 'timeToNextAcq';
-    SeqControl(1).argument = 50000; % 50 ms pause between pulses
+Event(n+1).seqControl = [2]; % transfer data to host
     SeqControl(2).command = 'jump'; 
     SeqControl(2).argument = 1;
     SeqControl(2).condition = 'exitAfterJump';
 
-%% Save all the structures to a .mat file.
-save('Barney\Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
+%% Save all the structures t\\\\o a .mat file.
+%save('Barney\Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
+save('Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 

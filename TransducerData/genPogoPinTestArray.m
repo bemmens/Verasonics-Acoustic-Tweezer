@@ -1,6 +1,7 @@
 clear all
-Trans.name = 'PogoPinTestArray'; 
+Trans.name = 'custom'; 
 Trans.id = -1;
+Trans.connType = 12;
 Trans.units = 'mm';
 Trans.frequency = 1;
 
@@ -36,4 +37,5 @@ Trans.impedance = readmatrix("PogoPin1ResReact.xlsx"); %complex single value or 
 Trans.maxHighVoltage = 50;
 
 %% Save
-save("Barney\Verasonics-Acoustic-Tweezer\TransducerData\PogoPinTestArray.mat","Trans")
+%save("Barney\Verasonics-Acoustic-Tweezer\TransducerData\PogoPinTestArray.mat","Trans")
+save("Verasonics-Acoustic-Tweezer\TransducerData\PogoPinTestArray.mat","Trans")
