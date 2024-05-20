@@ -43,7 +43,7 @@ Event(1).seqControl = [1,2]; % transfer data to host
  SeqControl(2).command = 'noop';
  SeqControl(2).argument = 100000; % 100 ms pause between pulses
  
-Npulses = 8;
+Npulses = 17;
 for n = 2:2+Npulses
     Event(n).info = 'TX'; 
     Event(n).tx = 1; % use 1st TX structure.
