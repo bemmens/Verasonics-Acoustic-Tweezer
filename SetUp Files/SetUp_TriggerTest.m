@@ -41,19 +41,21 @@ Event(1).process = 0; % no processing
 Event(1).seqControl = [1,2]; % transfer data to host
  SeqControl(1).command = 'triggerOut';
  SeqControl(2).command = 'noop';
- SeqControl(2).argument = 25000; % 25 ms pause between pulses
+ SeqControl(2).argument = 50000; % 50 ms before pulses
  
-Npulses = 10;
+Npulses = 30;
 for n = 2:2+Npulses
     Event(n).info = 'TX'; 
-    Event(n).tx = 1; % use 1st TX structure.
+    Event(n).tx = 0; % use 1st TX structure.
     Event(n).rcv = 0; 
     Event(n).recon = 0; % no reconstruction.
     Event(n).process = 0; % no processing
-    Event(n).seqControl = [1,3]; % transfer data to host
+    Event(n).seqControl = [1,6]; % transfer data to host
+        SeqControl(1).command = 'triggerOut';
         SeqControl(3).command = 'timeToNextAcq';
         SeqControl(3).argument = 50000; % 50 ms pause between pulses
-        SeqControl(5).command = 'returnToMatlab';
+        SeqControl(6).command = 'noop';
+        SeqControl(6).argument = 150000; % 150 ms pause between pulses
 end
 
 Event(n+1).info = 'Check MatLab'; 
@@ -69,4 +71,4 @@ Event(n+1).seqControl = [4]; % transfer data to host
 
 %% Save all the structures t\\\\o a .mat file.
 %save('Barney\Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
-save('Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
+save('Verasonics-Acoustic-Tweezer\Data Files\TriggerTest.mat'); 

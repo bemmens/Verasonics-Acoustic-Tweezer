@@ -233,7 +233,7 @@ UI(1).Callback = @defSteering;
 
 % Save all the structures to a .mat file.
 %save('Barney/BarneyArchive/Barney_14Dec23/Barney/data_files/Vortex_Ring_Steerable'); 
-save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\CrudeSteer')
+save('C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\CrudeSteer')
 disp('KerCHOW!')
 %EventAnalysisTool
 %VSX
