@@ -17,7 +17,7 @@ load PogoPinTestArray % need to generate
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 
 %% Generate TW
-pulseLength = 100; % ms
+pulseLength = 100; % us
 nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
 TW(1).Parameters = [Trans.frequency,0.9,nHalfCycles,1]; % A, B, C, D
@@ -41,9 +41,9 @@ Event(1).process = 0; % no processing
 Event(1).seqControl = [1,2]; % transfer data to host
  SeqControl(1).command = 'triggerOut';
  SeqControl(2).command = 'noop';
- SeqControl(2).argument = 50000; % 50 ms before pulses
+ SeqControl(2).argument = 500; % 0.5 ms before pulses
  
-Npulses = 30;
+Npulses = 10;
 for n = 2:2+Npulses
     Event(n).info = 'TX'; 
     Event(n).tx = 0; % use 1st TX structure.
@@ -53,9 +53,9 @@ for n = 2:2+Npulses
     Event(n).seqControl = [1,6]; % transfer data to host
         SeqControl(1).command = 'triggerOut';
         SeqControl(3).command = 'timeToNextAcq';
-        SeqControl(3).argument = 50000; % 50 ms pause between pulses
+        SeqControl(3).argument = 5000; % 5 ms pause between pulses
         SeqControl(6).command = 'noop';
-        SeqControl(6).argument = 150000; % 150 ms pause between pulses
+        SeqControl(6).argument = 1000; % 1 ms pause between pulses
 end
 
 Event(n+1).info = 'Check MatLab'; 
@@ -69,6 +69,6 @@ Event(n+1).seqControl = [4]; % transfer data to host
     SeqControl(4).condition = 'exitAfterJump';
     SeqControl(5).command = 'returnToMatlab'; 
 
-%% Save all the structures t\\\\o a .mat file.
+%% Save all the structures to a .mat file.
 %save('Barney\Verasonics-Acoustic-Tweezer\Data Files\PogoPinTest.mat'); 
 save('Verasonics-Acoustic-Tweezer\Data Files\TriggerTest.mat'); 
