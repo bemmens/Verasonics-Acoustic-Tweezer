@@ -17,8 +17,9 @@ load PogoPinTestArray % need to generate
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 
 %% Generate TW
-pulseLength = 100; % ms
+pulseLength = 10; % us
 nHalfCycles = int32(2*pulseLength*Trans.frequency);
+%nHalfCycles = 2;
 TW(1).type = 'parametric'; 
 TW(1).Parameters = [Trans.frequency,0.9,nHalfCycles,1]; % A, B, C, D
 TW(1).equalize = 0;
@@ -28,8 +29,10 @@ TX.waveform = 1; % use 1st TW structure.
 TX.focus = 0; % distance (in wavelengths) from the Origin point on the transducer to where the beam comes to a focus
 TX.Steer = [0,0]; 
 TX.Origin = [0,0,0];
-TX.Apod = ones(1,Trans.numelements);
-TX.Apod(5) = 0;
+%TX.Apod = ones(1,Trans.numelements);
+TX.Apod = zeros(1,Trans.numelements);
+%TX.Apod(5) = 0;
+TX.Apod(9) = 1;
 TX.Delay = computeTXDelays(TX); 
 
 %% Specify sequence events.
@@ -41,7 +44,7 @@ Event(1).process = 0; % no processing
 Event(1).seqControl = [1,2]; % transfer data to host
  SeqControl(1).command = 'triggerOut';
  SeqControl(2).command = 'noop';
- SeqControl(2).argument = 25000; % 25 ms pause between pulses
+ SeqControl(2).argument = 2500; % 2.5 ms pause between sequences
  
 Npulses = 10;
 for n = 2:2+Npulses
@@ -52,7 +55,7 @@ for n = 2:2+Npulses
     Event(n).process = 0; % no processing
     Event(n).seqControl = [1,3]; % transfer data to host
         SeqControl(3).command = 'timeToNextAcq';
-        SeqControl(3).argument = 50000; % 50 ms pause between pulses
+        SeqControl(3).argument = 5000; % 5 ms pause between pulses
         SeqControl(5).command = 'returnToMatlab';
 end
 

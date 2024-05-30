@@ -55,7 +55,7 @@ for n = 2:2+Npulses
         SeqControl(3).command = 'timeToNextAcq';
         SeqControl(3).argument = 5000; % 5 ms pause between pulses
         SeqControl(6).command = 'noop';
-        SeqControl(6).argument = 1000; % 1 ms pause between pulses
+        SeqControl(6).argument = 5000; % 1ms (value*200ns) pause between pulses
 end
 
 Event(n+1).info = 'Check MatLab'; 
