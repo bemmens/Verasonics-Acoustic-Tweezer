@@ -22,8 +22,8 @@ bigDishDIAm = 90e3/wavelength;
 TPC(5).maxHighVoltage = 20;
 
 %% Generate TW
-pulseLength = 20; % ms
-nHalfCycles = int32(2*pulseLength*Trans.frequency);
+%pulseLength = 20; % ms
+%nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
 TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D
 TW(1).equalize = 0;
@@ -31,7 +31,7 @@ TW(1).equalize = 0;
 %% Specify Default TX structure array. 
 rmin = -30; % max steering range in mm
 rmax = 30;
-defaultLoc = 10; % default tweezer position in mm
+defaultLoc = 20; % default tweezer position in mm
 currentLoc = defaultLoc;
 
 [DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
