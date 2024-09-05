@@ -42,7 +42,7 @@ TPC(5).highVoltageLimit = 20;
 % Specify Transmit waveform structure. 
 %pulseLength = 20; % ms
 %nHalfCycles = int32(2*pulseLength*Trans.frequency);
-nHalfCycles = 50*2; % MUST BE EVEN
+nHalfCycles = 10*2; % MUST BE EVEN
 if rem(nHalfCycles,2) ~= 0
     fprintf(2,'Error: nHalfCycles must be even!\n')
 elseif rem(nHalfCycles,1) ~= 0
@@ -112,7 +112,7 @@ SeqControl(2).argument = 50000 ;% 10 ms
 
 PRF = 250; % Hz
 TTNB = 1e6/PRF; % us
-TTNB = 360;  % us pause between pulses (10 is minimum specifiable)
+TTNB = 5000;  % us pause between pulses (10 is minimum specifiable)
 SeqControl(3).command = 'timeToNextAcq';
 SeqControl(3).argument = TTNB;
 SeqControl(4).command = 'returnToMatlab';
@@ -164,7 +164,7 @@ Event(n).process = 0;
 Event(n).seqControl = [1]; 
 n = n+1;
 
-usPerCallback = 10000;
+usPerCallback = 100000;
 nTransmitsPerCallback = ceil(usPerCallback/SeqControl(3).argument/2); % nTransmitsPerCallback only counts on handedness so nTX will be twice as high
 n_TX0 = n;
 for i = 1:nTransmitsPerCallback
