@@ -54,7 +54,8 @@ UI(1).Control = VsSliderControl('LocationCode','UserA1',...
 UI(1).Callback = @defMove;
 
 %% Save To .mat File
-savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
+%savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
+savedir = "C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\";
 % Save all the structures to a .mat file.
 save(strcat(savedir,'SmoothMove')); 
 

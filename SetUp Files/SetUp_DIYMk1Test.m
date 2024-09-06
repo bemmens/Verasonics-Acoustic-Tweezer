@@ -17,18 +17,18 @@ load DIYMk1Trans % need to generate
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 
 %% Generate TW
-pulseLength = 10; % us
-nHalfCycles = int32(2*pulseLength*Trans.frequency);
-%nHalfCycles = 2;
+%pulseLength = 10; % us
+%nHalfCycles = int32(2*pulseLength*Trans.frequency);
+nHalfCycles = 20;
 TW(1).type = 'parametric'; 
-TW(1).Parameters = [Trans.frequency,0.9,nHalfCycles,1]; % A, B, C, D
+TW(1).Parameters = [1.05,0.9,nHalfCycles,1]; % A, B, C, D
 TW(1).equalize = 0;
 
 %% Specify TX structure array. 
 TX.waveform = 1; % use 1st TW structure.
 %TX.focus = 10; % distance (in wavelengths) from the Origin point on the transducer to where the beam comes to a focus
 %TX.Steer = [0,0]; 
-TX.FocalPtMm = [10,10,10]; %[1x3 double] FocalPt in mm instead of wavelengths
+%TX.FocalPtMm = [10,10,10]; %[1x3 double] FocalPt in mm instead of wavelengths
 TX.Origin = [0,0,0];
 TX.Apod = ones(1,Trans.numelements);
 TX.Delay = computeTXDelays(TX); 
@@ -69,5 +69,5 @@ Event(n+1).seqControl = [1,4]; % transfer data to host
     SeqControl(5).command = 'returnToMatlab'; 
 
 %% Save all the structures to a .mat file.
-%save('Barney\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1Test.mat'); 
-save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1Test.mat'); 
+save('Verasonics-Acoustic-Tweezer\Data Files\DIYMk1Test.mat'); 
+%save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1Test.mat'); 
