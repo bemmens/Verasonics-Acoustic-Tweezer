@@ -31,7 +31,8 @@ TX.waveform = 1; % use 1st TW structure.
 TX.FocalPtMm = [0,0,40]; %[1x3 double] FocalPt in mm instead of wavelengths
 TX.Origin = [0,0,0];
 TX.Apod = ones(1,Trans.numelements);
-TX.Delay = computeTXDelays(TX); 
+[RH_VortexDelay,DelayMatrix] = compDelayVortex(Trans.ElementPos,0);
+TX.Delay = computeTXDelays(TX) + + RH_VortexDelay'; 
 
 %% Specify sequence events.
 Event(1).info = 'Start Trigger'; 
@@ -69,5 +70,5 @@ Event(n+1).seqControl = [1,4]; % transfer data to host
     SeqControl(5).command = 'returnToMatlab'; 
 
 %% Save all the structures to a .mat file.
-save('Verasonics-Acoustic-Tweezer\Data Files\DIYMk1Test.mat'); 
+save('Verasonics-Acoustic-Tweezer\Data Files\DIYMk1TestVortex.mat'); 
 %save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1Test.mat'); 
