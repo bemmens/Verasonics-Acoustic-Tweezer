@@ -22,8 +22,8 @@ bigDishDIAm = 90e3/wavelength;
 TPC(5).maxHighVoltage = 20;
 
 %% Generate TW
-pulseLength = 20; % ms
-nHalfCycles = int32(2*pulseLength*Trans.frequency);
+%pulseLength = 20; % ms
+%nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
 TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D
 TW(1).equalize = 0;
