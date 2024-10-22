@@ -1,37 +1,37 @@
 clear all
 
 %% Generate Resource
-Resource.Parameters.numTransmit = 32; % no. of transmit channels
-Resource.Parameters.connector = 1; % trans. connector to use (V 256).
-Resouce.Parameters.speedOfSound = 1481;
+Resource.Parameters.numTransmit = 121; % no. of transmit channels % CHECK
+Resource.Parameters.connector = 1; % trans. connector to use (V 256). % CHECK
+Resouce.Parameters.speedOfSound = 1481; % CHECK
 
 %% Generate Trans
-load Trans_Ring
+load DIYMk1Trans.mat % CHECK
 
 %% Physical Parameters
 wavelength = Resouce.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 
-H = 30*1e-3; %PD depth in m
-H_wavelengths = H/wavelength; % PD depth in wavelengths
+H = 35*1e-3; %PD depth in m
+H_wavelengths = H/wavelength; % PD depth in wavelengths CHECK
 
-probeDiameter = 70e3/wavelength; % In wavelengths
+probeDiameter = 70e3/wavelength; % In wavelengths % CHECK
 dishDiameter = 39e3/wavelength;
 bigDishDIAm = 90e3/wavelength;
 
 %% TPC Settings
-TPC(5).maxHighVoltage = 20;
+TPC(5).maxHighVoltage = 20; % CHECK
 
 %% Generate TW
 pulseLength = 20; % ms
 nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
-TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D
+TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D % CHECK
 TW(1).equalize = 0;
 
 %% Specify Default TX structure array. 
-rmin = -30; % max steering range in mm
-rmax = 30;
-defaultLoc = 0; % default tweezer position in mm
+rmin = -30; % max steering range in mm % CHECK
+rmax = 30; % CHECK
+defaultLoc = 0; % default tweezer position in mm % CHECK
 currentLoc = defaultLoc;
 
 [DefaultTX,~,naDefault] = genMoveTX(defaultLoc,defaultLoc); % no movement
@@ -54,10 +54,10 @@ UI(1).Control = VsSliderControl('LocationCode','UserA1',...
 UI(1).Callback = @defMove;
 
 %% Save To .mat File
-%savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
-savedir = "C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\";
+savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
+%savedir = "C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\";
 % Save all the structures to a .mat file.
-save(strcat(savedir,'SmoothMove')); 
+save(strcat(savedir,'SmoothMove'));  % CHECK
 
 %% Functions
 function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
@@ -197,6 +197,10 @@ nextLoc = UIValue;
 assignin('base',"nextLoc",nextLoc)
 currentLoc = evalin('base','currentLoc');
 
+disp('----------')
+disp('Moving to:')
+disp(nextLoc)
+
 % create new TX and Event
 [TX,~,naMove] = genMoveTX(currentLoc,nextLoc);
 assignin('base',"TX",TX)
@@ -223,9 +227,8 @@ Control(3).Command = 'update&Run';
 Control(3).Parameters = {'Event'};
 assignin('base', 'Control',Control);
 
-disp('----------')
-disp('Moving to:')
-disp(nextLoc)
+disp('Done')
+
 end
 
 function [Event,n] = genMoveEvent(naMove)
