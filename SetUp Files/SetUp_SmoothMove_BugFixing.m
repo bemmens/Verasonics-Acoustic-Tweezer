@@ -28,7 +28,7 @@ TPC(5).maxHighVoltage = 20; % CHECK
 %pulseLength = 20; % ms
 %nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
-TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D % CHECK
+TW(1).Parameters = [Trans.frequency,0.9,20,1]; % A, B, C, D % CHECK
 TW(1).equalize = 0;
 
 %% Specify Default TX structure array. 
@@ -68,7 +68,7 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
 
     %Specify largest steering step
     wavelength = evalin('base','wavelength');
-    dr = wavelength/10;
+    dr = wavelength/100;
     if dr>wavelength/2
         disp('ERROR:dr too large!')
         DISP('-------------------')
@@ -103,7 +103,7 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
                        1,2*naMove); % matrix shape  
     
     [RH_VortexDelay,~] = compDelayVortex(Trans.ElementPos,0);
-    LH_VortexDelay = flip(RH_VortexDelay);
+    LH_VortexDelay = flip(flip(RH_VortexDelay));
     
     for j = 1:naMove
         TX(j).Steer = [thetasMove(j),0];
@@ -127,10 +127,10 @@ SeqControl(2).argument = 5;
 SeqControl(2).condition = 'immediate';
 
 SeqControl(3).command = 'noop';
-SeqControl(3).argument = 0 ;% 5 ms REDUNDANT??
+SeqControl(3).argument = 10 ;% us REDUNDANT??
 
 SeqControl(4).command = 'timeToNextEB';
-SeqControl(4).argument = 1000; % us pause between pulses (10 is minimum specifiable)
+SeqControl(4).argument = 10; % us pause between pulses (10 is minimum specifiable)
 
 SeqControl(5).command = 'jump'; 
 SeqControl(5).argument = 1;
