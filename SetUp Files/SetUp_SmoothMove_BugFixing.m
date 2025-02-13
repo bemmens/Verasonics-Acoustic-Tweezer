@@ -4,6 +4,9 @@ clear all
 Resource.Parameters.numTransmit = 121; % no. of transmit channels % CHECK
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). % CHECK
 Resouce.Parameters.speedOfSound = 1481; % CHECK
+Resource.Parameters.simulateMode = 1;
+
+Resource.System.UTA = '160-SH';
 
 %% Generate Trans
 load DIYMk1Trans.mat % CHECK
@@ -11,7 +14,7 @@ load DIYMk1Trans.mat % CHECK
 %% Physical Parameters
 wavelength = Resouce.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 
-H = 35*1e-3; %PD depth in m
+H = 65*1e-3; %PD depth in m
 H_wavelengths = H/wavelength; % PD depth in wavelengths CHECK
 
 probeDiameter = 70e3/wavelength; % In wavelengths % CHECK
@@ -25,7 +28,7 @@ TPC(5).maxHighVoltage = 20; % CHECK
 %pulseLength = 20; % ms
 %nHalfCycles = int32(2*pulseLength*Trans.frequency);
 TW(1).type = 'parametric'; 
-TW(1).Parameters = [Trans.frequency,0.9,100,1]; % A, B, C, D % CHECK
+TW(1).Parameters = [Trans.frequency,0.9,20,1]; % A, B, C, D % CHECK
 TW(1).equalize = 0;
 
 %% Specify Default TX structure array. 
@@ -54,8 +57,8 @@ UI(1).Control = VsSliderControl('LocationCode','UserA1',...
 UI(1).Callback = @defMove;
 
 %% Save To .mat File
-savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
-%savedir = "C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\";
+%savedir = 'C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\';
+savedir = "C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\";
 % Save all the structures to a .mat file.
 save(strcat(savedir,'SmoothMove'));  % CHECK
 
@@ -65,7 +68,7 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
 
     %Specify largest steering step
     wavelength = evalin('base','wavelength');
-    dr = wavelength/10;
+    dr = wavelength/100;
     if dr>wavelength/2
         disp('ERROR:dr too large!')
         DISP('-------------------')
@@ -79,7 +82,7 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
         dr = -dr;
     end
     
-    distance = (rTarget - r0)/1e3 ;%now to m
+    distance = (rTarget - r0)/1e3 ;% now to m
     nLargestSteps = floor(distance/dr);
     N = nLargestSteps+1;
     
@@ -93,14 +96,14 @@ function [TX,rs,naMove] = genMoveTX(currentLoc,nextLoc)
     Trans = evalin('base','Trans');
     TX = repmat(struct('waveform', 1, ...
                        'Origin', zeros(1,3), ...
-                       'focus', 0, ...
+                       'focus', 65*1e-3/wavelength, ...
                        'Steer', [0.0,0.0], ...
                        'Apod', ones(1,Trans.numelements), ...
                        'Delay', zeros(1,Trans.numelements)),...
                        1,2*naMove); % matrix shape  
     
     [RH_VortexDelay,~] = compDelayVortex(Trans.ElementPos,0);
-    LH_VortexDelay = flip(RH_VortexDelay);
+    LH_VortexDelay = flip(flip(RH_VortexDelay));
     
     for j = 1:naMove
         TX(j).Steer = [thetasMove(j),0];
@@ -124,19 +127,20 @@ SeqControl(2).argument = 5;
 SeqControl(2).condition = 'immediate';
 
 SeqControl(3).command = 'noop';
-SeqControl(3).argument = 50000 ;% 5 ms
+SeqControl(3).argument = 10 ;% us REDUNDANT??
 
 SeqControl(4).command = 'timeToNextEB';
-SeqControl(4).argument = 360; % us pause between pulses (10 is minimum specifiable)
+SeqControl(4).argument = 10; % us pause between pulses (10 is minimum specifiable)
 
 SeqControl(5).command = 'jump'; 
-SeqControl(5).argument = 4;
+SeqControl(5).argument = 1;
 SeqControl(5).condition = 'exitAfterJump';
 
 SeqControl(6).command = 'jump'; 
+SeqControl(6).argument = 4; % Default
 SeqControl(6).condition = 'exitAfterJump';
 
-%SeqControl(7).command = 'triggerOut';
+SeqControl(7).command = 'triggerOut';
 end
 
 function [Event,n] = genInitialiseEvent()
@@ -259,7 +263,7 @@ for i = 1:naMove
     n=n+1;
 end
 
-Event(end).seqControl = [4,5];
+Event(end).seqControl = [4,6];
 
 end
 
