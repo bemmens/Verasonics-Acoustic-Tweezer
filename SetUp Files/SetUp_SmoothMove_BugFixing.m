@@ -203,20 +203,26 @@ disp(nextLoc)
 
 % create new TX and Event
 [TX,~,naMove] = genMoveTX(currentLoc,nextLoc);
+
 assignin('base',"TX",TX)
 
 [InitEvent,n1] = genInitialiseEvent();
 [MoveEvent,n2] = genMoveEvent(naMove);
+
 SeqControl = evalin('base','SeqControl');
 SeqControl(6).argument = n1+n2;
+
 assignin('base',"SeqControl",SeqControl)
+
 [StationaryEvent,~] = genNewStationaryEvent(naMove);
 
 Event = [InitEvent,MoveEvent,StationaryEvent];
+
 assignin('base',"Event",Event)
 
 % Control update&Run
 Control = evalin('base', 'Control');
+
 Control(1).Command = 'update&Run';
 Control(1).Parameters = {'SeqControl'};
 
@@ -225,6 +231,7 @@ Control(2).Parameters = {'TX'};
 
 Control(3).Command = 'update&Run';
 Control(3).Parameters = {'Event'};
+
 assignin('base', 'Control',Control);
 
 disp('Done')

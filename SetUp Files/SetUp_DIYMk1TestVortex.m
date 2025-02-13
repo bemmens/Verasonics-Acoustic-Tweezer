@@ -32,7 +32,7 @@ TX.FocalPtMm = [0,0,65]; %[1x3 double] FocalPt in mm instead of wavelengths
 TX.Origin = [0,0,0];
 TX.Apod = ones(1,Trans.numelements);
 [RH_VortexDelay,DelayMatrix] = compDelayVortex(Trans.ElementPos,0);
-TX.Delay = computeTXDelays(TX) + + RH_VortexDelay'; 
+TX.Delay = computeTXDelays(TX) + RH_VortexDelay'; 
 
 %% Specify sequence events.
 
