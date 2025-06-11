@@ -30,9 +30,6 @@ TPC(1).maxHighVoltage = 8; % Set max voltage to 30V
 %% Specify TX structure array.
 TTNB = 20; % us
 
-dutyCycle = (TTNB - nHalfCycles/2)/TTNB;
-fprintf('Duty cycle: %e\n', dutyCycle)
-
 % fieldData = load('line_sweep');
 % fieldData = load('circle_sweep');
 fieldData = load('focus_merging_sweep');
