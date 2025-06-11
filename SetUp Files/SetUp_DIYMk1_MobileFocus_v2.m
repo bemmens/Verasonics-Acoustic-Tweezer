@@ -204,12 +204,12 @@ function updateFocalPointZ(~, ~, UIValue)
 end
 
 function updateTrapType(~, ~, UIValue)
-    TrapType = evalin('base', 'TrapType');
+%     TrapType = evalin('base', 'TrapType');
     % Update the TrapType variable in the base workspace
     assignin('base', 'TrapType', int32(UIValue));
     FocalPtMm = evalin('base', 'FocalPtMm');
     % Update system
-    updateTX(FocalPtMm,TrapType);
+    updateTX(FocalPtMm,int32(UIValue));
 end
 
 function updateTX(FocalPtMm,TrapType)
@@ -234,7 +234,7 @@ Control(3).Parameters = {'Event'};
 assignin('base', 'Control', Control);
 
 % Print updated focal point for debugging
-disp(['Updated TX Focal Point: ', num2str(TX(1).FocalPtMm)]);
+disp(['Current Focal Point: ', num2str(TX(1).FocalPtMm)]);
 % Display the current Trap Type for debugging
 trapTypeName = {'Plane', 'Focus', 'Twin', 'RH Vortex 4', 'LH Vortex', 'Switching Vortex'};
 currentTrapType = evalin('base', 'TrapType');
