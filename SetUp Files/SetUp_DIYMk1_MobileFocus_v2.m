@@ -82,9 +82,9 @@ UI(4).Control = {'UserB4', 'Style', 'VsSlider', ...
 UI(4).Callback = @updateTrapType;
 
 %% Save all the structures to a .mat file.
-% save('Verasonics-AcousticTweezer\Sequences\DIYMk1_MobileFocus_v2.mat');
+save('Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
 
-save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
+% save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
 
 %%
 
@@ -137,7 +137,7 @@ function SeqControl = genSeqControl(TTNB)
 end
 
 function Event = genEvent(TrapType)
-    
+TrapType = double(TrapType);
 if TrapType == 6
     Event(1).info = 'Balanced Vortex';
     Event(1).tx = 4; % RH Vortex
@@ -158,7 +158,14 @@ else
     Event(1).rcv = 0;
     Event(1).recon = 0; % no reconstruction.
     Event(1).process = 0; % no processing
-    Event(1).seqControl = [1,2,3];
+    Event(1).seqControl = [1,2];
+
+    Event(2).info = 'Transmit';
+    Event(2).tx = TrapType; % use TrapType TX structure.
+    Event(2).rcv = 0;
+    Event(2).recon = 0; % no reconstruction.
+    Event(2).process = 0; % no processing
+    Event(2).seqControl = [1,2,3];
 end
 
 end
@@ -166,26 +173,29 @@ end
 function updateFocalPointX(~, ~, UIValue)
     % Retrieve TX from the base workspace
     FocalPtMm = evalin('base', 'FocalPtMm');
+    TrapType = evalin('base', 'TrapType');
     % Update only the X coordinate of the focal point
     FocalPtMm(1) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
     % Update system
-    updateTX(FocalPtMm);
+    updateTX(FocalPtMm,TrapType);
 end
 
 function updateFocalPointY(~, ~, UIValue)
     % Retrieve TX from the base workspace
     FocalPtMm = evalin('base', 'FocalPtMm');
+    TrapType = evalin('base', 'TrapType');
     % Update only the Y coordinate of the focal point
     FocalPtMm(2) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
     % Update system
-    updateTX(FocalPtMm);
+    updateTX(FocalPtMm,TrapType);
 end
 
 function updateFocalPointZ(~, ~, UIValue)
     % Retrieve TX from the base workspace
     FocalPtMm = evalin('base', 'FocalPtMm');
+    TrapType = evalin('base', 'TrapType');
     % Update only the Z coordinate of the focal point
     FocalPtMm(3) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
@@ -194,10 +204,12 @@ function updateFocalPointZ(~, ~, UIValue)
 end
 
 function updateTrapType(~, ~, UIValue)
+    TrapType = evalin('base', 'TrapType');
     % Update the TrapType variable in the base workspace
-    assignin('base', 'TrapType', UIValue);
+    assignin('base', 'TrapType', int32(UIValue));
+    FocalPtMm = evalin('base', 'FocalPtMm');
     % Update system
-    updateTransmit(FocalPtMm,TrapType);
+    updateTX(FocalPtMm,TrapType);
 end
 
 function updateTX(FocalPtMm,TrapType)
@@ -226,7 +238,7 @@ disp(['Updated TX Focal Point: ', num2str(TX(1).FocalPtMm)]);
 % Display the current Trap Type for debugging
 trapTypeName = {'Plane', 'Focus', 'Twin', 'RH Vortex 4', 'LH Vortex', 'Switching Vortex'};
 currentTrapType = evalin('base', 'TrapType');
+disp(currentTrapType)
 disp(['Current Trap Type: ', trapTypeName{currentTrapType}]);
-
 end
 
