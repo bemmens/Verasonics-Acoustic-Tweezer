@@ -69,7 +69,7 @@ UI(2).Callback = @updateFocalPointY;
 UI(3).Control = {'UserB3', 'Style', 'VsSlider', ...
     'Label', 'TX Focal Z (mm)', ...
     'SliderMinMaxVal', [0, zlim, 50], ... % Z range: 20mm to 100mm, default 50
-    'SliderStep', [0.01/2, 0.1/2], ...
+    'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%3.0f'};
 UI(3).Callback = @updateFocalPointZ;
 
@@ -77,13 +77,14 @@ UI(3).Callback = @updateFocalPointZ;
 UI(4).Control = {'UserB4', 'Style', 'VsSlider', ...
     'Label', 'Trap Type', ...
     'SliderMinMaxVal', [1, 6, 2], ... % TrapType range: 1 to 6, default 2 (focus)
-    'SliderStep', [1/6, 1/6], ...
+    'SliderStep', [1/5, 1/5], ...
     'ValueFormat', '%1.0f'};
 UI(4).Callback = @updateTrapType;
 
 %% Save all the structures to a .mat file.
-save('Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
-
+name = 'MobileFocus';
+save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
+disp(['Program name: ', name])
 % save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
 
 %%
@@ -236,9 +237,9 @@ assignin('base', 'Control', Control);
 % Print updated focal point for debugging
 disp(['Current Focal Point: ', num2str(TX(1).FocalPtMm)]);
 % Display the current Trap Type for debugging
-trapTypeName = {'Plane', 'Focus', 'Twin', 'RH Vortex 4', 'LH Vortex', 'Switching Vortex'};
+trapTypeName = {'Plane', 'Focus', 'Twin', 'RH Vortex', 'LH Vortex', 'Switching Vortex'};
 currentTrapType = evalin('base', 'TrapType');
-disp(currentTrapType)
+% disp(currentTrapType)
 disp(['Current Trap Type: ', trapTypeName{currentTrapType}]);
 end
 
