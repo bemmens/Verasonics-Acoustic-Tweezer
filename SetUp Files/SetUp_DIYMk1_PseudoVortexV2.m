@@ -27,7 +27,7 @@ TPC(1).maxHighVoltage = 20; % Set max voltage
 
 %% Specify TX structure array.
 TTNB = 20; % us
-r = 10; % Default radius (to be modified via GUI)
+r = 1; % Default radius (to be modified via GUI) mm?
 
 % Calculate the duty cycle of the sequence
 period = 1 / (Trans.frequency * 1e6); %in seconds
@@ -49,13 +49,13 @@ function [TX, nFrames] = genTX(TTNB, r)
 
     Trans = evalin('base','Trans');
 
-    SequenceLength = 1; %s
+    SequenceLength = 0.001; %s
     tPerFrame = (TTNB*1e-6);
     nFrames = ceil(SequenceLength/(TTNB*1e-6));
     disp(['Gnerating ',num2str(nFrames),' frames...'])
 
     % Dynamic Focal Points
-    fPlane = 68; % mm
+    fPlane = 50; % mm
 
     angles = linspace(0,2*pi,nFrames);
     fpoints = zeros(nFrames,3);
