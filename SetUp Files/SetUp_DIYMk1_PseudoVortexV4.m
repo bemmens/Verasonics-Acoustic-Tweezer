@@ -45,7 +45,7 @@ Event = genEvent(nFrames);
 
 % Radius
 UI(1).Control = {'UserB1', 'Style', 'VsSlider', ...
-    'Label', 'Vortex Radius', ...
+    'Label', 'Vtx Radius [mm]', ...
     'SliderMinMaxVal', [0, 10, 1.48], ... % Radius range: 0mm to 10mm, default 1.48mm
     'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.3f'};
@@ -53,10 +53,10 @@ UI(1).Callback = @updateRadius;
 
 % Vortex Period
 UI(2).Control = {'UserB2', 'Style', 'VsSlider', ...
-    'Label', 'Vortex Period', ...
-    'SliderMinMaxVal', [0, 0.5, 0.01], ... % Radius range: 0mm to 10mm, default 1.48mm
+    'Label', 'Vtx Period [ms]', ...
+    'SliderMinMaxVal', [0, 0.5, 0.01]*1000, ... % Radius range: 0mm to 10mm, default 1.48mm
     'SliderStep', [0.01, 0.1], ...
-    'ValueFormat', '%5.3f'};
+    'ValueFormat', '%5.0f'};
 UI(2).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
@@ -75,13 +75,13 @@ function updateRadius(~, ~, UIValue)
 end
 
 function updatePeriod(~, ~, UIValue)
-    assignin('base', 'VortexPeriod', UIValue);
+    assignin('base', 'VortexPeriod', UIValue/1000);
     % Update system
     r = evalin('base','r');
-    updateSequence(r, UIValue);
+    updateSequence(r, UIValue/1000);
 
     % Print new Sequence Parameters
-    disp(strcat('Current Vortex Period:',{' '} ,num2str(UIValue),"s"))
+    disp(strcat('Current Vortex Period:',{' '} ,num2str(UIValue),"ms"))
 end
 
 function [TX, nFrames] = genTX(TTNB, r, VortexPeriod)
