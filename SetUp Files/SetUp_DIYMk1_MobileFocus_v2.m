@@ -40,7 +40,7 @@ fprintf('Duty cycle: %.2f%%\n', dutyCycle * 100);
 
 SeqControl = genSeqControl(TTNB);
 
-TrapType = 2;
+TrapType = 6;
 Event = genEvent(TrapType);
 
 %% UI Control
@@ -76,7 +76,7 @@ UI(3).Callback = @updateFocalPointZ;
 % TrapType Slider for TX Control
 UI(4).Control = {'UserB4', 'Style', 'VsSlider', ...
     'Label', 'Trap Type', ...
-    'SliderMinMaxVal', [1, 6, 2], ... % TrapType range: 1 to 6, default 2 (focus)
+    'SliderMinMaxVal', [1, 6, 6], ... % TrapType range: 1 to 6, default 2 (focus)
     'SliderStep', [1/5, 1/5], ...
     'ValueFormat', '%1.0f'};
 UI(4).Callback = @updateTrapType;
@@ -118,11 +118,12 @@ function TX = genTX(FocalPtMm)
 
     % RH Vortex
     [RH_VortexDelay,~] = compDelayVortex_ver2(Trans.ElementPos,0,1); % the last input is the topological charge
-    TX(4).Delay = computeTXDelays(TX(3)) + RH_VortexDelay';
+    TX(4).Delay = computeTXDelays(TX(4)) + RH_VortexDelay';
 
     % LH Vortex
-    LH_VortexDelay = flip(RH_VortexDelay);
-    TX(5).Delay = computeTXDelays(TX(5)) + LH_VortexDelay';
+%     LH_VortexDelay = flip(RH_VortexDelay);
+    LH_VortexDelay = -(RH_VortexDelay);    
+    TX(5).Delay = computeTXDelays(TX(5)) + LH_VortexDelay'+1;
 
 end
 
