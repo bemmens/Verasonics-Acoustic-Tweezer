@@ -40,10 +40,29 @@ fprintf('Duty cycle: %.2f%%\n', dutyCycle * 100);
 SeqControl = genSeqControl(TTNB);
 Event = genEvent(nFrames);
 
+%% UI Control
+
+% Radius
+UI(1).Control = {'UserB1', 'Style', 'VsSlider', ...
+    'Label', 'Vortex Radius', ...
+    'SliderMinMaxVal', [0, 10, 1.48], ... % Radius range: 0mm to 10mm, default 1.48mm
+    'SliderStep', [0.01/2, 0.1/2], ...
+    'ValueFormat', '%3.0f'};
+UI(1).Callback = @updateRadius;
+
 %% Save all the structures to a .mat file.
 save('Verasonics-Tatsuki\Sequences\DIYMk1_PseudoVortex.mat');
 
 %% Functions
+
+function updateRadius(~, ~, UIValue)
+    % Retrieve TX from the base workspace
+    r = evalin('base', 'r');
+    r = UIValue;
+    assignin('base', 'r', r);
+    % Update system
+    updateTX(r);
+end
 
 function [TX, nFrames] = genTX(TTNB, r)
 
