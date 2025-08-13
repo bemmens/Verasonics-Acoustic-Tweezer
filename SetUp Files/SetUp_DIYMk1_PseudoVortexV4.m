@@ -27,8 +27,8 @@ TPC(1).maxHighVoltage = 20; % Set max voltage
 
 %% Specify TX structure array.
 TTNB = 20; % us
-r = 10; % [mm] Default radius (to be modified via GUI)
-VortexPeriod = 0.01; % [s] Default
+r = 5; % [mm] Default radius (to be modified via GUI)
+VortexPeriod = 0.001; % [s] Default
 
 % Calculate the duty cycle of the sequence
 period = 1 / (Trans.frequency * 1e6); %in seconds
@@ -47,44 +47,49 @@ Event = genEvent(nFrames);
 UI(1).Control = {'UserB1', 'Style', 'VsSlider', ...
     'Label', 'Vortex Radius', ...
     'SliderMinMaxVal', [0, 10, 1.48], ... % Radius range: 0mm to 10mm, default 1.48mm
-    'SliderStep', [0.01/2, 0.1/2], ...
-    'ValueFormat', '%3.0f'};
+    'SliderStep', [0.01, 0.1], ...
+    'ValueFormat', '%5.3f'};
 UI(1).Callback = @updateRadius;
 
 % Vortex Period
 UI(2).Control = {'UserB2', 'Style', 'VsSlider', ...
     'Label', 'Vortex Period', ...
     'SliderMinMaxVal', [0, 0.5, 0.01], ... % Radius range: 0mm to 10mm, default 1.48mm
-    'SliderStep', [0.01/2, 0.1/2], ...
+    'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.3f'};
 UI(2).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
-save('Verasonics-Tatsuki\Sequences\DIYMk1_PseudoVortex.mat');
+save('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/DIYMk1_PseudoVortexV4.mat');
 
 %% Functions
 
 function updateRadius(~, ~, UIValue)
-    % Retrieve TX from the base workspace
     assignin('base', 'r', UIValue);
     % Update system
-    updateTX(r);
+    VortexPeriod = evalin('base','VortexPeriod');
+    updateSequence(UIValue, VortexPeriod);
+
+    % Print new Sequence Parameters
+    disp(strcat("Current Vortex Radius:",{' '},num2str(UIValue),"mm"))
 end
 
 function updatePeriod(~, ~, UIValue)
-    % Retrieve TX from the base workspace
     assignin('base', 'VortexPeriod', UIValue);
     % Update system
-    updateTX(r, VortexPeriod);
+    r = evalin('base','r');
+    updateSequence(r, UIValue);
+
+    % Print new Sequence Parameters
+    disp(strcat('Current Vortex Period:',{' '} ,num2str(UIValue),"s"))
 end
 
-function [TX, nFrames] = genTX(r, VortexPeriod)
+function [TX, nFrames] = genTX(TTNB, r, VortexPeriod)
 
     Trans = evalin('base','Trans');
-    TTNB = evalin('base','TTNB');
 
     nFrames = ceil(VortexPeriod/(TTNB*1e-6));
-    disp(['Gnerating ',num2str(nFrames),' frames...'])
+    disp(['nFrames: ',num2str(nFrames)])
 
     % generate List of Focal Points
     fPlane = 50; % mm
@@ -122,10 +127,10 @@ function Event = genEvent(nFrames)
 
     Event = repmat(struct('info', 'TX', ...
                       'tx', 1, ...
-                      'rvc', 0, ...
+                      'rcv', 0, ...
                       'recon', 0, ...
-                      'pocess', 0, ...
-                      'SeqContol', [1,2]), ...
+                      'process', 0, ...
+                      'seqControl', [1,2]), ...
                       1,nFrames);
 
     Event(nFrames).seqControl = [1,2,3];
@@ -133,13 +138,15 @@ function Event = genEvent(nFrames)
     n = 1;
     for i = 1:nFrames
         Event(n).tx = i;
+        n = n+1;
     end
 
 end
 
 function [Event,TX] = updateSequence(r, VortexPeriod)
     % Gen new TX and Events
-    [TX, nFrames] = genTX(r,VortexPeriod);
+    TTNB = evalin('base','TTNB');
+    [TX, nFrames] = genTX(TTNB, r, VortexPeriod);
     Event = genEvent(nFrames);
 
     % Save updated TX back to base workspace
@@ -158,6 +165,4 @@ function [Event,TX] = updateSequence(r, VortexPeriod)
     
     assignin('base', 'Control', Control);
 
-    % Print new Sequence Parameters
-    disp(['Current Vortex Radius: ', num2str(r),"mm"])
 end
