@@ -57,9 +57,7 @@ save('Verasonics-Tatsuki\Sequences\DIYMk1_PseudoVortex.mat');
 
 function updateRadius(~, ~, UIValue)
     % Retrieve TX from the base workspace
-    r = evalin('base', 'r');
-    r = UIValue;
-    assignin('base', 'r', r);
+    assignin('base', 'r', UIValue);
     % Update system
     updateTX(r);
 end
@@ -68,13 +66,12 @@ function [TX, nFrames] = genTX(TTNB, r)
 
     Trans = evalin('base','Trans');
 
-    SequenceLength = 1; %s
-    tPerFrame = (TTNB*1e-6);
+    SequenceLength = 0.01; %s
     nFrames = ceil(SequenceLength/(TTNB*1e-6));
     disp(['Gnerating ',num2str(nFrames),' frames...'])
 
-    % Dynamic Focal Points
-    fPlane = 68; % mm
+    % generate List of Focal Points
+    fPlane = 50; % mm
 
     angles = linspace(0,2*pi,nFrames);
     fpoints = zeros(nFrames,3);
@@ -106,20 +103,46 @@ function SeqControl = genSeqControl(TTNB)
 end
 
 function Event = genEvent(nFrames)
+
+    Event = repmat(struct('info', 'TX', ...
+                      'tx', 1, ...
+                      'rvc', 0, ...
+                      'recon', 0, ...
+                      'pocess', 0, ...
+                      'SeqContol', [1,2]), ...
+                      1,nFrames);
+
+    Event(nFrames).seqControl = [1,2,3];
+
     n = 1;
     for i = 1:nFrames
-        Event(n).info = 'TX';
         Event(n).tx = i;
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = [1,2]; 
-        n = n + 1;
     end
-    Event(n).info = 'Check MATLAB';
-    Event(n).tx = nFrames;
-    Event(n).rcv = 0;
-    Event(n).recon = 0;
-    Event(n).process = 0;
-    Event(n).seqControl = [1,2,3]; 
+
+end
+
+function [Event,TX] = updateSequence()
+
+    % Gen new TX and Events
+    TX = genTX(TTNB,r);
+    Event = genEvent(nFrames);
+
+    % Save updated TX back to base workspace
+    assignin('base', 'TX', TX);
+    assignin('base','Event',Event)
+
+    % update&run
+    Control(1).Command = 'update&Run';
+    Control(1).Parameters = {'SeqControl'};
+    
+    Control(2).Command = 'update&Run';
+    Control(2).Parameters = {'TX'};
+    
+    Control(3).Command = 'update&Run';
+    Control(3).Parameters = {'Event'};
+    
+    assignin('base', 'Control', Control);
+
+    % Print new Sequence Parameters
+    disp(['Current Vortex Radius: ', num2str(r),"mm"])
 end
