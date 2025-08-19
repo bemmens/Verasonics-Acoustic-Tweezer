@@ -60,7 +60,9 @@ UI(2).Control = {'UserB2', 'Style', 'VsSlider', ...
 UI(2).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
-save('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/DIYMk1_PseudoVortexV4.mat');
+name = 'DIYMk1_PseudoVortexV4';
+save(strcat('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat'));
+disp(name)
 
 %% Functions
 

@@ -45,7 +45,7 @@ Event = genEvent(nFrames);
 
 % Radius
 UI(1).Control = {'UserB1', 'Style', 'VsSlider', ...
-    'Label', 'Vortex Radius [mm]', ...
+    'Label', 'Vtx Radius [mm]', ...
     'SliderMinMaxVal', [0, 10, 1.48], ... % Radius range: 0mm to 10mm, default 1.48mm
     'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.3f'};
@@ -53,14 +53,16 @@ UI(1).Callback = @updateRadius;
 
 % Vortex Period
 UI(2).Control = {'UserB2', 'Style', 'VsSlider', ...
-    'Label', 'Vortex Period [ms]', ...
+    'Label', 'Vtx Period [ms]', ...
     'SliderMinMaxVal', [0, 0.5, 0.01]*1000, ... % Radius range: 0mm to 10mm, default 1.48mm
     'SliderStep', [0.01, 0.1], ...
-    'ValueFormat', '%5.3f'};
+    'ValueFormat', '%5.0f'};
 UI(2).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
-save('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/DIYMk1_PseudoVortexV4.mat');
+name = 'DIYMk1_PseudoVortexV4';
+save('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/'.mat');
+disp()
 
 %% Functions
 
