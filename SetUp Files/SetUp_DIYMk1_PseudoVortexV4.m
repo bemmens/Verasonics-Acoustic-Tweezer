@@ -61,7 +61,9 @@ UI(2).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
 name = 'DIYMk1_PseudoVortexV4';
-save(strcat('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat'));
+% save(strcat('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat'));
+save(strcat('C:\Users\verasonics\Documents\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files',name,'.mat'));
+
 disp(name)
 
 %% Functions

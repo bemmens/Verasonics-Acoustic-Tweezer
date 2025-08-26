@@ -23,7 +23,7 @@ TW(1).Parameters = [1.05,1,nHalfCycles,1]; % MHz, PulseWidth, NHalfCycles,polari
 TW(1).equalize = 0;
 
 %% Set Transmit Power
-TPC(1).maxHighVoltage = 20; % Set max voltage
+TPC(1).maxHighVoltage = 10; % Set max voltage
 
 %% Specify TX structure array.
 TTNB = 20; % us
@@ -92,8 +92,8 @@ UI(5).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
 name = 'DIYMk1_PseudoVortexV5';
-save(strcat('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat'));
-disp(name)
+save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
+disp(['Program name: ', name])
 
 %% Functions
 
