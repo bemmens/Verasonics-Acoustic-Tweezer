@@ -104,7 +104,7 @@ function updateFocalPointX(~, ~, UIValue)
     FocalPtMm(1) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
     % Update system
-    updateSequence(UIValue, VortexPeriod, FocalPtMm);
+    updateSequence(r, VortexPeriod, FocalPtMm);
     % Print new Sequence Parameters
     disp(['Current Focal Point: ', num2str(FocalPtMm)]);
 end
@@ -116,7 +116,7 @@ function updateFocalPointY(~, ~, UIValue)
     FocalPtMm(2) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
     % Update system
-    updateSequence(UIValue, VortexPeriod, FocalPtMm);
+    updateSequence(r, VortexPeriod, FocalPtMm);
     % Print new Sequence Parameters
     disp(['Current Focal Point: ', num2str(FocalPtMm)]);
 end
@@ -128,7 +128,7 @@ function updateFocalPointZ(~, ~, UIValue)
     FocalPtMm(3) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
     % Update system
-    updateSequence(UIValue, VortexPeriod, FocalPtMm);
+    updateSequence(r, VortexPeriod, FocalPtMm);
     % Print new Sequence Parameters
     disp(['Current Focal Point: ', num2str(FocalPtMm)]);
 end
