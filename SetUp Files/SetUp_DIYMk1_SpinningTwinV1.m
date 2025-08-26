@@ -1,6 +1,8 @@
 clear all
 
-% Simple plane wave generation for PogoPin testing
+
+% Creates a twin trap that rotates with a given period (SpinPeriod)
+
 
 %% Generate Resource
 Resource.Parameters.numTransmit = 121; % no. of transmit channels
