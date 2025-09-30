@@ -27,64 +27,133 @@ TPC(1).maxHighVoltage = 20; % Set max voltage
 
 %% Specify TX structure array.
 TTNB = 20; % us
-r = 5; % [mm] Default radius (to be modified via GUI)
+
+% GUI Variables
+r = 5; % [mm] Default radius 
 VortexPeriod = 0.001; % [s] Default
+FocalPtMm = [0 0 50];
 
 % Calculate the duty cycle of the sequence
 period = 1 / (Trans.frequency * 1e6); %in seconds
 dutyCycle = ((nHalfCycles/2) * period)/(TTNB*1e-6); % Duty cycle calculation
 fprintf('Duty cycle: %.2f%%\n', dutyCycle * 100);
 
-[TX, nFrames] = genTX(TTNB, r, VortexPeriod);
+[TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm);
 
 %% Specify sequence events.
 SeqControl = genSeqControl(TTNB);
 Event = genEvent(nFrames);
 
-%% UI Control
+%% UI Controls
+
+xlim = 10;
+ylim = xlim;
+zlim = 100;
+
+% X-Axis Slider for TX Focal Point
+UI(1).Control = {'UserB5', 'Style', 'VsSlider', ...
+    'Label', 'X [mm]', ...
+    'SliderMinMaxVal', [-xlim, xlim, 0], ... % X range: -20mm to 20mm, default 0
+    'SliderStep', [0.01/2, 0.1/2], ...
+    'ValueFormat', '%3.0f'};
+UI(1).Callback = @updateFocalPointX;
+
+% Y-Axis Slider for TX Focal Point
+UI(2).Control = {'UserB4', 'Style', 'VsSlider', ...
+    'Label', 'Y [mm]', ...
+    'SliderMinMaxVal', [-ylim, ylim, 0], ... % Y range: -20mm to 20mm, default 0
+    'SliderStep', [0.01/2, 0.1/2], ...
+    'ValueFormat', '%3.0f'};
+UI(2).Callback = @updateFocalPointY;
+
+% Z-Axis Slider for TX Focal Point
+UI(3).Control = {'UserB3', 'Style', 'VsSlider', ...
+    'Label', 'Z [mm]', ...
+    'SliderMinMaxVal', [0, zlim, 50], ... % Z range: 20mm to 100mm, default 50
+    'SliderStep', [0.01, 0.1], ...
+    'ValueFormat', '%3.0f'};
+UI(3).Callback = @updateFocalPointZ;
 
 % Radius
-UI(1).Control = {'UserB1', 'Style', 'VsSlider', ...
-    'Label', 'Vortex Radius [mm]', ...
+UI(4).Control = {'UserB2', 'Style', 'VsSlider', ...
+    'Label', 'Radius [mm]', ...
     'SliderMinMaxVal', [0, 10, 1.48], ... % Radius range: 0mm to 10mm, default 1.48mm
     'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.3f'};
-UI(1).Callback = @updateRadius;
+UI(4).Callback = @updateRadius;
 
 % Vortex Period
-UI(2).Control = {'UserB2', 'Style', 'VsSlider', ...
-    'Label', 'Vortex Period [ms]', ...
-    'SliderMinMaxVal', [0, 0.5, 0.01]*1000, ... % Radius range: 0mm to 10mm, default 1.48mm
+UI(5).Control = {'UserB1', 'Style', 'VsSlider', ...
+    'Label', 'Period [ms]', ...
+    'SliderMinMaxVal', [0.00001, 0.5, 0.01]*1000, ... % [min,max,step]
     'SliderStep', [0.01, 0.1], ...
-    'ValueFormat', '%5.3f'};
-UI(2).Callback = @updatePeriod;
+    'ValueFormat', '%5.0f'};
+UI(5).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
-save('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/DIYMk1_PseudoVortexV4.mat');
+name = 'DIYMk1_PseudoVortexV5';
+save(strcat('/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat'));
+disp(name)
 
 %% Functions
 
+function updateFocalPointX(~, ~, UIValue)
+    FocalPtMm = evalin('base', 'FocalPtMm');
+    VortexPeriod = evalin('base','VortexPeriod');
+    % Update only the X coordinate of the focal point
+    FocalPtMm(1) = UIValue;
+    assignin('base', 'FocalPtMm', FocalPtMm);
+    % Update system
+    updateSequence(r, VortexPeriod, FocalPtMm);
+    % Print new Sequence Parameters
+    disp(['Current Focal Point: ', num2str(FocalPtMm)]);
+end
+
+function updateFocalPointY(~, ~, UIValue)
+    FocalPtMm = evalin('base', 'FocalPtMm');
+    VortexPeriod = evalin('base','VortexPeriod');
+    % Update only the Y coordinate of the focal point
+    FocalPtMm(2) = UIValue;
+    assignin('base', 'FocalPtMm', FocalPtMm);
+    % Update system
+    updateSequence(r, VortexPeriod, FocalPtMm);
+    % Print new Sequence Parameters
+    disp(['Current Focal Point: ', num2str(FocalPtMm)]);
+end
+
+function updateFocalPointZ(~, ~, UIValue)
+    FocalPtMm = evalin('base', 'FocalPtMm');
+    VortexPeriod = evalin('base','VortexPeriod');
+    % Update only the Z coordinate of the focal point
+    FocalPtMm(3) = UIValue;
+    assignin('base', 'FocalPtMm', FocalPtMm);
+    % Update system
+    updateSequence(r, VortexPeriod, FocalPtMm);
+    % Print new Sequence Parameters
+    disp(['Current Focal Point: ', num2str(FocalPtMm)]);
+end
+
 function updateRadius(~, ~, UIValue)
+    FocalPtMm = evalin('base', 'FocalPtMm');
     assignin('base', 'r', UIValue);
     % Update system
     VortexPeriod = evalin('base','VortexPeriod');
-    updateSequence(UIValue, VortexPeriod);
-
+    updateSequence(UIValue, VortexPeriod, FocalPtMm);
     % Print new Sequence Parameters
     disp(strcat("Current Vortex Radius:",{' '},num2str(UIValue),"mm"))
 end
 
 function updatePeriod(~, ~, UIValue)
+    FocalPtMm = evalin('base', 'FocalPtMm');
     assignin('base', 'VortexPeriod', UIValue/1000);
     % Update system
     r = evalin('base','r');
-    updateSequence(r, UIValue/1000);
-
+    updateSequence(r, UIValue/1000, FocalPtMm);
     % Print new Sequence Parameters
     disp(strcat('Current Vortex Period:',{' '} ,num2str(UIValue),"ms"))
 end
 
-function [TX, nFrames] = genTX(TTNB, r, VortexPeriod)
+function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
 
     Trans = evalin('base','Trans');
 
@@ -92,13 +161,11 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod)
     disp(['nFrames: ',num2str(nFrames)])
 
     % generate List of Focal Points
-    fPlane = 50; % mm
-
     angles = linspace(0,2*pi,nFrames);
     fpoints = zeros(nFrames,3);
-    fpoints(:,1) = r*cos(angles);
-    fpoints(:,2) = r*sin(angles);
-    fpoints(:,3) = fPlane;
+    fpoints(:,1) = FocalPtMm(1) + r*cos(angles);
+    fpoints(:,2) = FocalPtMm(2) + r*sin(angles);
+    fpoints(:,3) = FocalPtMm(3);
 
     TX = repmat(struct('waveform', 1, ...
                        'Origin', zeros(1,3), ...
@@ -143,10 +210,10 @@ function Event = genEvent(nFrames)
 
 end
 
-function [Event,TX] = updateSequence(r, VortexPeriod)
+function [Event,TX] = updateSequence(r, VortexPeriod, FocalPtMm)
     % Gen new TX and Events
     TTNB = evalin('base','TTNB');
-    [TX, nFrames] = genTX(TTNB, r, VortexPeriod);
+    [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm);
     Event = genEvent(nFrames);
 
     % Save updated TX back to base workspace
