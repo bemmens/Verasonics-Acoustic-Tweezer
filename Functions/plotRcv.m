@@ -1,4 +1,4 @@
-function plotRcv(ch,RcvData,Resource,Trans,Receive)
+function plotRcv(RcvData,Resource,Trans,Receive)
     wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
     chanels = 1:128;
     disp(wavelength)
@@ -10,16 +10,12 @@ function plotRcv(ch,RcvData,Resource,Trans,Receive)
     disp(size(RcvData{1}(:,:,1)))
 
     figure()
-    for i = 1:128
-        hold on
-        plot3(i,depth_axis,RcvData{1}(:,i,1))
-    end
-    hold off
+    plot(depth_axis,RcvData{1}(:,:,1))
     xlabel('Depth [mm]')
 
-    figure()
-    imagesc(RcvData{1}(:,:,1)); 
-    colormap('gray')
-    xlabel('Channel')
+%     figure()
+%     imagesc(RcvData{1}(:,:,1)); 
+%     colormap('gray')
+%     xlabel('Channel')
 
 

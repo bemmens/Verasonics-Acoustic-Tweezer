@@ -9,15 +9,9 @@ function plotRcv(ch,RcvData,Resource,Trans,Receive)
     disp(size(depth_axis))
     disp(size(RcvData{1}(:,:,1)))
 
-    X = chanels;
-
-
     figure()
-    for i = 1:128
-        hold on
-        plot(depth_axis,RcvData{1}(:,i,1))
-    end
-    xlabel('Depth [mm]')
+    waterfall(depth_axis,RcvData{1}(:,:,1))
+
 
     figure()
     imagesc(RcvData{1}(:,:,1)); 
