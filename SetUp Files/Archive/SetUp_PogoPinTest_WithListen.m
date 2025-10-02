@@ -69,7 +69,7 @@ Event(1).seqControl = 1; % transfer data to host
  SeqControl(1).command = 'timeToNextAcq';
  SeqControl(1).argument = 50000; % 50 ms pause between pulses
 
-for n = 2:1000;
+for n = 2:1000
     Event(n).info = 'nth TX'; 
     Event(n).tx = 1; % use 1st TX structure.
     Event(n).rcv = 0; 

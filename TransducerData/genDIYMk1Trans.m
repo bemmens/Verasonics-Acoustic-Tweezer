@@ -4,7 +4,7 @@ Trans.name = 'DIYMk1';
 Trans.id = -1;
 Trans.connType = 12;
 Trans.units = 'mm';
-Trans.frequency = 1;
+Trans.frequency = 1.05;
 
 Trans.type = 2;
 elPerRow = 11;
