@@ -1,4 +1,4 @@
-3clear all
+clear all
 
 %% Generate Resource
 Resource.Parameters.numTransmit = 121; % no. of transmit channels

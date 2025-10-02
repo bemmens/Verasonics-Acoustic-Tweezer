@@ -85,7 +85,7 @@ UI(4).Callback = @updateRadius;
 % Vortex Period
 UI(5).Control = {'UserB1', 'Style', 'VsSlider', ...
     'Label', 'Period [ms]', ...
-    'SliderMinMaxVal', [0.00001, 0.5, 0.01]*1000, ... % [min,max,step]
+    'SliderMinMaxVal', [0.00005, 0.25, 0.01]*1000, ... % [min,max,step]
     'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.0f'};
 UI(5).Callback = @updatePeriod;
@@ -100,6 +100,7 @@ disp(['Program name: ', name])
 function updateFocalPointX(~, ~, UIValue)
     FocalPtMm = evalin('base', 'FocalPtMm');
     VortexPeriod = evalin('base','VortexPeriod');
+    r = evalin('base','r');
     % Update only the X coordinate of the focal point
     FocalPtMm(1) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
@@ -112,6 +113,7 @@ end
 function updateFocalPointY(~, ~, UIValue)
     FocalPtMm = evalin('base', 'FocalPtMm');
     VortexPeriod = evalin('base','VortexPeriod');
+    r = evalin('base','r');
     % Update only the Y coordinate of the focal point
     FocalPtMm(2) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
@@ -124,6 +126,7 @@ end
 function updateFocalPointZ(~, ~, UIValue)
     FocalPtMm = evalin('base', 'FocalPtMm');
     VortexPeriod = evalin('base','VortexPeriod');
+    r = evalin('base','r');
     % Update only the Z coordinate of the focal point
     FocalPtMm(3) = UIValue;
     assignin('base', 'FocalPtMm', FocalPtMm);
@@ -158,6 +161,9 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     Trans = evalin('base','Trans');
 
     nFrames = ceil(VortexPeriod/(TTNB*1e-6));
+    if nFrames<1
+        nFrames=1;
+    end
     disp(['nFrames: ',num2str(nFrames)])
 
     % generate List of Focal Points
@@ -198,13 +204,18 @@ function Event = genEvent(nFrames)
                       'recon', 0, ...
                       'process', 0, ...
                       'seqControl', [1,2]), ...
-                      1,nFrames);
+                      1,nFrames*2);
 
     Event(nFrames).seqControl = [1,2,3];
 
     n = 1;
     for i = 1:nFrames
         Event(n).tx = i;
+        n = n+1;
+    end
+
+    for i = 1:nFrames
+        Event(n).tx = nFrames - i + 1;
         n = n+1;
     end
 
