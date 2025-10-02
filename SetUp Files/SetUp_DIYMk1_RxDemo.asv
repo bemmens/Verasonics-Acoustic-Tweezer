@@ -28,9 +28,10 @@ TW(1).equalize = 1;
 
 %% Specify TX structure array. 
 TX.waveform = 1; % use 1st TW structure.
-TX.FocalPtMm = [0,0,surface_depth]*1e3;
+Tx.FocalPtMm = [0,0,surface_depth]*1e3;
 TX.Origin = [0,0,0];
-TX.Apod = ones(1,Trans.numelements);
+TX.Apod = ZEROS(1,Trans.numelements);
+
 TX.Delay = computeTXDelays(TX);
 
 %% Recieve Structures
