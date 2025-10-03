@@ -40,7 +40,7 @@ nCh = Resource.Parameters.numRcvChannels;
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16'; 
 % Note: Sample rate is 4xTrans.frequency by default
-Resource.RcvBuffer(1).rowsPerFrame = 256; % samples stored per acquisition (eg: 2048 -> measures for 512 wavelengths -> max imaging depth of 256 wavelngths)
+Resource.RcvBuffer(1).rowsPerFrame = 2048/4; % samples stored per acquisition (eg: 2048 -> measures for 512 wavelengths -> max imaging depth of 256 wavelngths)
 Resource.RcvBuffer(1).colsPerFrame = 121; % num channels
 Resource.RcvBuffer(1).numFrames = 1; % minimum size is 1 frame.
 
@@ -53,7 +53,7 @@ TGC(1).Waveform = computeTGCWaveform(TGC);
 Receive(1).Apod = ones(1, nCh); 
 Receive(1).startDepth = 0;  
 % Receive(1).endDepth = int16(surface_depth*1.5/wavelength); % in wavelengths (distance from source to be imaged)
-Receive(1).endDepth = 64; % in wavelengths (distance from source to be imaged)
+Receive(1).endDepth = Resource.RcvBuffer(1).rowsPerFrame/8; % in wavelengths (distance from source to be imaged)
 Receive(1).TGC = 1; 
 Receive(1).mode = 0; 
 Receive(1).bufnum = 1; 

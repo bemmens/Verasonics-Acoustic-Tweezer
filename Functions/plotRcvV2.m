@@ -41,11 +41,20 @@ function plotRcvV2(RcvData,Resource,Trans,Receive,TX)
         distance(ch) = calDistance(ch);
     end
 
+
+    % Compute mean distance omitting outliers (median/MAD method)
+    validIdx = ~isoutlier(distance,'mean');
+    clean_d = distance(validIdx);
+    mean_distance = mean(clean_d);
+    std_distance = std(clean_d);    
+
     figure()
-    subplot(3,1,1)
+    subplot(3,1,3)
     plot(chanels, distance)
     xlabel('Channel')
     ylabel('Distance [mm]')
+    title(['Mean Distance To Surface: ', num2str(mean_distance, '%.2f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
+
 
     subplot(3,1,2)
     imagesc(chanels, depth_axis, all_ch);
@@ -54,16 +63,11 @@ function plotRcvV2(RcvData,Resource,Trans,Receive,TX)
     xlabel('Channel')
     title('Received Data')
 
-    subplot(3,1,3)
+
+    subplot(3,1,1)
     plot(depth_axis, all_ch);
     xlabel('Depth [mm]')
     ylabel('Amplitude')
     title('Received Data')
 
-    % Compute mean distance omitting outliers (median/MAD method)
-    validIdx = ~isoutlier(distance,'mean');
-    clean_d = distance(validIdx);
-    mean_distance = mean(clean_d);
-    std_distance = std(clean_d);
-    title(['Mean Distance To Surface: ', num2str(mean_distance, '%.2f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
 end
