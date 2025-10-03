@@ -124,12 +124,6 @@ plot(t,wvfm)
 xlabel('Time [us]');
 ylabel('Voltage [V]');
 
-pause(refreshRate)
-counter = counter + 1;
-if counter > maxRunTime/refreshRate
-    warning('saveData overflowwing!')
-end
-
 %%
 File_loc = 'Verasonics-Acoustic-Tweezer/TransducerData/Channel Testing/'; % CHECK
 File_name = 'Tx_n_Probe_m'; % CHECK
@@ -144,3 +138,5 @@ end
 
 save(Save_String,'saveData','scpSettings',"-v7.3");
 disp(strcat('File Saved: Data\',File_name,'.mat'));
+
+clf
