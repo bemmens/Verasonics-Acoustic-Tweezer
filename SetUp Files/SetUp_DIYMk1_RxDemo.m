@@ -60,8 +60,6 @@ Receive(1).bufnum = 1;
 Receive(1).framenum = 1; 
 Receive(1).acqNum = 1; 
 Receive(1).sampleMode = 'NS200BW'; % Default
-Receive(1).LowPassCoef = []; % Default
-Receive(1).InputFilter = []; % Default
 
 %% Specify sequence events.
 Event(1).info = 'Acquisition'; 

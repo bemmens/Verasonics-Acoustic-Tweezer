@@ -49,25 +49,25 @@ function plotRcvV2(RcvData,Resource,Trans,Receive,TX)
     std_distance = std(clean_d);    
 
     figure()
-    subplot(3,1,3)
-    plot(chanels, distance)
-    xlabel('Channel')
-    ylabel('Distance [mm]')
-    title(['Mean Distance To Surface: ', num2str(mean_distance, '%.2f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
+    tiledlayout(4,1)
+    nexttile
+    plot(depth_axis, all_ch);
+    xlabel('Depth [mm]')
+    ylabel('Amplitude')
+    title('Received Data')
 
-
-    subplot(3,1,2)
+    nexttile
     imagesc(chanels, depth_axis, all_ch);
     colormap('gray')
     ylabel('Depth [mm]')
     xlabel('Channel')
     title('Received Data')
 
+    nexttile
+    scatter(chanels, distance,marker = '.')
+    xlabel('Channel')
+    ylabel('Distance [mm]')
+    title(['Mean Distance To Surface: ', num2str(mean_distance, '%.2f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
 
-    subplot(3,1,1)
-    plot(depth_axis, all_ch);
-    xlabel('Depth [mm]')
-    ylabel('Amplitude')
-    title('Received Data')
 
 end
