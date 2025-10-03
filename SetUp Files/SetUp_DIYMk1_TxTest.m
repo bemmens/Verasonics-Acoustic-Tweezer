@@ -92,7 +92,7 @@ UI(5).Callback = @updateTestChannel;
 
 %% Save all the structures to a .mat file.
 name = 'TxTest';
-save(['/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat']);
+save(['Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat']);
 disp(['Program name: ', name])
 % save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
 
@@ -258,8 +258,9 @@ function updateTestChannel(~, ~, UIValue)
 end
 
 function updateTX(FocalPtMm,TrapType)
+testChannel = evalin('base','testChannel');
 % **Recalculate TX Delays**
-TX = genTX(FocalPtMm);
+TX = genTX(FocalPtMm,testChannel);
 Event = genEvent(TrapType);
 
 % **Save updated TX back to base workspace**
