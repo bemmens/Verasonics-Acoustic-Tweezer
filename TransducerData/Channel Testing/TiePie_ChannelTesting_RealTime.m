@@ -107,9 +107,7 @@ disp(scp.SampleFrequency/1e6)
 disp(record_time*1e6)
 
 %%
-function saveData = read(scp,scpSettings)
-    saveData.data = zeros(scpSettings.RecordLength); % counter,wvfm
-    
+function wvfm = read(scp,scpSettings)    
     t = (1:scpSettings.RecordLength)*1e6/scpSettings.SampleFrequency; % us
     
     scpSettings.timestamp = datetime; % start time of day
@@ -118,37 +116,18 @@ function saveData = read(scp,scpSettings)
     %disp('Measuring...')
     [~, measurement] = takeMeasOscilloscope( scp );
     wvfm = measurement(:,1);
+    % trigger = measurement(:,2);
     
     figure(1)
     plot(t,wvfm)
     xlabel('Time [us]');
     ylabel('Voltage [V]');
 
-    saveData.data = wvfm;
 end
 
 run = 1;
+ch = 0;
 while run == 1
-    saveData = read(scp,scpSettings);
-    repeat = input('R? [y/n]: ','s');
-    if lower(repeat) ~= 'y'
-        run = 0;
-    else
-        run = 1;
-    end
+    data = read(scp,scpSettings);
+    pause(1)
 end
-
-%%
-% Ask for input to confirm save
-confirmSave = input('Do you want to save the data? (y/n): ', 's');
-if lower(confirmSave) ~= 'y'
-    disp('Data not saved.');
-    return;
-end
-
-File_loc = 'Verasonics-Acoustic-Tweezer/TransducerData/Channel Testing/'; % CHECK
-File_name = input('Filename: ','s'); % CHECK
-Save_String=strcat(File_loc,File_name,'.mat');
-
-save(Save_String,'saveData','scpSettings',"-v7.3");
-disp(strcat('File Saved:',Save_String));

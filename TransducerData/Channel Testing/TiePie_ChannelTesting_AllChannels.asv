@@ -107,9 +107,7 @@ disp(scp.SampleFrequency/1e6)
 disp(record_time*1e6)
 
 %%
-function saveData = read(scp,scpSettings)
-    saveData.data = zeros(scpSettings.RecordLength); % counter,wvfm
-    
+function wvfm = read(scp,scpSettings)    
     t = (1:scpSettings.RecordLength)*1e6/scpSettings.SampleFrequency; % us
     
     scpSettings.timestamp = datetime; % start time of day
@@ -118,19 +116,23 @@ function saveData = read(scp,scpSettings)
     %disp('Measuring...')
     [~, measurement] = takeMeasOscilloscope( scp );
     wvfm = measurement(:,1);
+    % trigger = measurement(:,2);
     
     figure(1)
     plot(t,wvfm)
     xlabel('Time [us]');
     ylabel('Voltage [V]');
 
-    saveData.data = wvfm;
 end
 
 run = 1;
+ch = 0;
 while run == 1
-    saveData = read(scp,scpSettings);
-    repeat = input('R? [y/n]: ','s');
+    ch = ch + 1;
+    disp(strcat('Channel Done: ',str(ch)))
+    data = read(scp,scpSettings);
+    saveData(:, ch) = data; % Store the data for the current channel
+    repeat = input('Next Channel? [y/n]: ','s');
     if lower(repeat) ~= 'y'
         run = 0;
     else
@@ -138,6 +140,7 @@ while run == 1
     end
 end
 
+disp(size(saveData))
 %%
 % Ask for input to confirm save
 confirmSave = input('Do you want to save the data? (y/n): ', 's');
