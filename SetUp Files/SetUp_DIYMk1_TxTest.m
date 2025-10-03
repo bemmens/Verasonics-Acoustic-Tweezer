@@ -1,7 +1,7 @@
 clear all
 
 %% Generate Resource
-Resource.Parameters.numTransmit = 121; % no. of transmit channels
+Resource.Parameters.numTransmit = 128; % no. of transmit channels
 Resource.Parameters.connector = 1; % trans. connector to use.
 Resource.Parameters.speedOfSound = 1481;
 Resource.Parameters.simulateMode = 1; % runs script in simulate mode
@@ -9,7 +9,7 @@ Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 Resource.System.UTA = '160-SH';
 
 %% Generate Trans
-load DIYMk1Trans % need to generate
+load DIYMk1Trans_128 % need to generate
 
 %% Physical Parameters
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
@@ -27,7 +27,7 @@ TPC(1).maxHighVoltage = 10; % Set max voltage
 
 %% Specify TX structure array.
 FocalPtMm = [0 0 50];
-TX = genTX(FocalPtMm);
+TX = genTX(FocalPtMm,0);
 
 %% Specify sequence events.
 
@@ -91,8 +91,8 @@ UI(5).Control = {'UserB5','Style','VsSlider', ...
 UI(5).Callback = @updateTestChannel;
 
 %% Save all the structures to a .mat file.
-name = 'MobileFocus';
-save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
+name = 'TxTest';
+save(['/Users/gv19838/Documents/Vantage-4.9.7-2505271400/Verasonics-Acoustic-Tweezer/Data Files/',name,'.mat']);
 disp(['Program name: ', name])
 % save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
 
@@ -109,9 +109,11 @@ function TX = genTX(FocalPtMm,testChannel)
                    'Delay', zeros(1,Trans.numelements)),...
                    1,5); % matrix shape  
 
-    if testChannel > 0
-        TX(:).Apod = zeros(1,Trans.numelements);
-        TX(:).Apod(:,testChannel) = 1; % Activate only the testChannel element
+    for t = 1:5
+        if testChannel > 0
+            TX(t).Apod = zeros(1,Trans.numelements);
+            TX(t).Apod(:,testChannel) = 1; % Activate only the testChannel element
+        end
     end
 
     % TrapType is equivalent to TX index
@@ -126,7 +128,7 @@ function TX = genTX(FocalPtMm,testChannel)
     TX(3).Delay = computeTXDelays(TX(3)) + twinPhase';
 
     % RH Vortex
-    [RH_VortexDelay,~] = compDelayVortex_ver2(Trans.ElementPos,0,1); % the last input is the topological charge
+    RH_VortexDelay = compDelayVortex(Trans.ElementPos,1); % the last input is the topological charge
     TX(4).Delay = computeTXDelays(TX(4)) + RH_VortexDelay';
 
     % LH Vortex
@@ -147,36 +149,37 @@ function SeqControl = genSeqControl(TTNB)
 end
 
 function Event = genEvent(TrapType)
-TrapType = double(TrapType);
-if TrapType == 6
-    Event(1).info = 'Balanced Vortex';
-    Event(1).tx = 4; % RH Vortex
-    Event(1).rcv = 0;
-    Event(1).recon = 0; % no reconstruction.
-    Event(1).process = 0; % no processing
-    Event(1).seqControl = [1,2]; %
+    TrapType = double(TrapType);
 
-    Event(2).info = 'Balanced Vortex';
-    Event(2).tx = 5; % LH Vortex
-    Event(2).rcv = 0;
-    Event(2).recon = 0; % no reconstruction.
-    Event(2).process = 0; % no processing
-    Event(2).seqControl = [1,2,3]; %
-else
-    Event(1).info = 'Transmit';
-    Event(1).tx = TrapType; % use TrapType TX structure.
-    Event(1).rcv = 0;
-    Event(1).recon = 0; % no reconstruction.
-    Event(1).process = 0; % no processing
-    Event(1).seqControl = [1,2];
+    if TrapType == 6
+        Event(1).info = 'Balanced Vortex';
+        Event(1).tx = 4; % RH Vortex
+        Event(1).rcv = 0;
+        Event(1).recon = 0; % no reconstruction.
+        Event(1).process = 0; % no processing
+        Event(1).seqControl = [1,2]; %
 
-    Event(2).info = 'Transmit';
-    Event(2).tx = TrapType; % use TrapType TX structure.
-    Event(2).rcv = 0;
-    Event(2).recon = 0; % no reconstruction.
-    Event(2).process = 0; % no processing
-    Event(2).seqControl = [1,2,3];
-end
+        Event(2).info = 'Balanced Vortex';
+        Event(2).tx = 5; % LH Vortex
+        Event(2).rcv = 0;
+        Event(2).recon = 0; % no reconstruction.
+        Event(2).process = 0; % no processing
+        Event(2).seqControl = [1,2,3]; %
+    else
+        Event(1).info = 'Transmit';
+        Event(1).tx = TrapType; % use TrapType TX structure.
+        Event(1).rcv = 0;
+        Event(1).recon = 0; % no reconstruction.
+        Event(1).process = 0; % no processing
+        Event(1).seqControl = [1,2];
+
+        Event(2).info = 'Transmit';
+        Event(2).tx = TrapType; % use TrapType TX structure.
+        Event(2).rcv = 0;
+        Event(2).recon = 0; % no reconstruction.
+        Event(2).process = 0; % no processing
+        Event(2).seqControl = [1,2,3];
+    end
 
 end
 
@@ -232,11 +235,7 @@ function updateTestChannel(~, ~, UIValue)
     TrapType  = evalin('base','TrapType');
 
     % Regenerate TX with (optional) single active element
-    if testChannel == 0
-        TX = genTX(FocalPtMm);              % all elements
-    else
-        TX = genTX(FocalPtMm,testChannel);  % single element
-    end
+    TX = genTX(FocalPtMm,testChannel);  % single element
     Event = genEvent(TrapType);
 
     % Push updates to base

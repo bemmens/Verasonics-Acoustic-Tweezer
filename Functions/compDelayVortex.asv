@@ -1,0 +1,6 @@
+function [phaseDelayVector = compDelayVortex(elementPos,n)
+nElements = length(elementPos);
+size = sqrt(nElements);
+phaseDelayVector = atan2(elementPos(:,1),elementPos(:,2));
+phaseDelayVector = mod(n.*phaseDelayVector, 2*pi)./(2*pi);
+end
