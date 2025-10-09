@@ -1,10 +1,18 @@
 function plotRcvV3(RcvData,Resource,Trans,Receive,TX)
     wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
-    chanels = 1:128;
+    chanels = Trans.Connector';
     n_samples = Resource.RcvBuffer(1).rowsPerFrame;
     depth_axis = linspace(0,1,n_samples)*Receive.endDepth*wavelength*1e3;
     all_ch = RcvData{1}(:,:,1);
 
+    %% Sorting channels
+    sorted_data = zeros(size(all_ch));
+    for i = 1:121
+        ch = chanels(i);
+        sorted_data(i,:) = all_ch(ch,:);
+    end
+
+    
     % % Use Fourier Interpolation to smooth data
     % interp_order = 4; % Interpolation factor
     % acll_ch_intrp = interpft(all_ch, interp_order*n_samples, 1);
@@ -12,7 +20,7 @@ function plotRcvV3(RcvData,Resource,Trans,Receive,TX)
     % all_ch = acll_ch_intrp;
 
     function h = calDistance(ch)
-        data = all_ch(:,ch);
+        data = sorted_data(ch,:);
 
         % Compute analytic signal and envelope
         env = abs(hilbert(data));
@@ -43,9 +51,9 @@ function plotRcvV3(RcvData,Resource,Trans,Receive,TX)
         h = h_threshold; % You can choose to return h_max or h_threshold
     end
 
-    distance = zeros(1,128);
-    for ch = chanels
-        distance(ch) = calDistance(ch);
+    distance = zeros(1,121);
+    for i = 1:121
+        distance(i) = calDistance(i);
     end
 
     % Compute mean distance omitting outliers (median/MAD method)
@@ -57,20 +65,20 @@ function plotRcvV3(RcvData,Resource,Trans,Receive,TX)
     figure()
     tiledlayout(3,1)
     nexttile
-    plot(depth_axis, all_ch);
+    plot(depth_axis, sorted_data);
     xlabel('Depth [mm]')
     ylabel('Amplitude')
     title('Received Data')
 
     nexttile
-    imagesc(chanels, depth_axis, all_ch);
+    imagesc( 1:121,depth_axis,sorted_data);
     colormap('gray')
     ylabel('Depth [mm]')
     xlabel('Channel')
     title('Received Data')
 
     nexttile
-    scatter(chanels, distance,marker = '.')
+    scatter(1:121, distance,marker = '.')
     xlabel('Channel')
     ylabel('Distance [mm]')
     title(['Mean Distance To Surface: ', num2str(mean_distance, '%.2f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
