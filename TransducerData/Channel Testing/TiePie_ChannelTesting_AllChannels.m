@@ -127,9 +127,10 @@ end
 
 run = 1;
 ch = 0;
+start_ch = 0;
 while run == 1
     ch = ch + 1;
-    disp(strcat('Channel Done: ',string(ch)))
+    disp(strcat('Channel Done: ',string(ch+start_ch-1)))
     data = read(scp,scpSettings);
     saveData(:, ch) = data; % Store the data for the current channel
     repeat = input('Next Channel? [y/n]: ','s');
