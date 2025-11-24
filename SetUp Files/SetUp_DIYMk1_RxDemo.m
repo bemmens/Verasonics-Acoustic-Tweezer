@@ -33,6 +33,8 @@ TX.Origin = [0,0,0];
 TX.Apod = ones(1,Trans.numelements);
 TX.Delay = computeTXDelays(TX);
 
+TPC(1).hv = 5;
+
 %% Recieve Structures
 Resource.Parameters.numRcvChannels = 121;
 nCh = Resource.Parameters.numRcvChannels;

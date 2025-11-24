@@ -60,6 +60,10 @@ ylabel('Distance [mm]')
 title(['Mean Distance To Surface: ', num2str(mean_distance, '%.1f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
 
 disp(['Mean Distance To Surface: ', num2str(mean_distance, '%.1f'), ' ± ', num2str(std_distance, '%.2f'), ' mm'])
+
+in = input('Filename:','s');
+save(string(in)+'.mat')
+
 function h = calDistance(sorted_data,depth_axis,ch)
     data = sorted_data(:,ch);
 
@@ -91,3 +95,4 @@ function h = calDistance(sorted_data,depth_axis,ch)
     h_threshold = depthThresholdMain - depthThresholdInit;
     h = h_threshold; % You can choose to return h_max or h_threshold
 end
+
