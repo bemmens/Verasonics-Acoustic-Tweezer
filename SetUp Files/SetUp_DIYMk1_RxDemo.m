@@ -73,4 +73,4 @@ Event(1).seqControl = 1; % transfer data to host
  SeqControl(1).command = 'transferToHost';
 
 %% Save all the structures to a .mat file.
-save('Verasonics-Acoustic-Tweezer\Data Files\RxDemo.mat'); 
+save('Verasonics-Acoustic-Tweezer\Data Files\Rx.mat'); 
