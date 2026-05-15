@@ -89,9 +89,12 @@ disp(['Program name: ', name])
 
 %%
 
-function TX = genTX(FocalPtMm)
+function TX = genTX(FocalPtMm)  
 
     Trans = evalin('base','Trans');
+
+    pulse_shift = zeros(1,Trans.numelements); 
+    pulse_shift(2:2:end) = 10; % Shift Half of the elements by n cycles to fill in gaps in TX waveform
 
     TX = repmat(struct('waveform', 1, ...
                    'Origin', zeros(1,3), ...
@@ -107,23 +110,23 @@ function TX = genTX(FocalPtMm)
 
     % TrapType is equivalent to TX index
     % Plane Wave
-    TX(1).Delay = zeros(1,Trans.numelements);
+    TX(1).Delay = zeros(1,Trans.numelements) + pulse_shift;
 
     % Focus
-    TX(2).Delay = computeTXDelays(TX(2));
+    TX(2).Delay = computeTXDelays(TX(2))+ pulse_shift;
 
     % Twin Trap
     twinPhase = (Trans.ElementPos(:,1)<0).*0.5;
-    TX(3).Delay = computeTXDelays(TX(3)) + twinPhase';
+    TX(3).Delay = computeTXDelays(TX(3)) + twinPhase'+ pulse_shift;
 
     % RH Vortex
     [RH_VortexDelay,~] = compDelayVortex_ver2(Trans.ElementPos,0,1); % the last input is the topological charge
-    TX(4).Delay = computeTXDelays(TX(4)) + RH_VortexDelay';
+    TX(4).Delay = computeTXDelays(TX(4)) + RH_VortexDelay'+ pulse_shift;
 
     % LH Vortex
 %     LH_VortexDelay = flip(RH_VortexDelay);
     LH_VortexDelay = -(RH_VortexDelay);    
-    TX(5).Delay = computeTXDelays(TX(5)) + LH_VortexDelay'+1;
+    TX(5).Delay = computeTXDelays(TX(5)) + LH_VortexDelay'+1+ pulse_shift;
 
 end
 
