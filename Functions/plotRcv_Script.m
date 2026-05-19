@@ -88,9 +88,6 @@ function h = calDistance(sorted_data,depth_axis,ch,roi_low,roi_high)
     function h = depthThreshold(low,high,env,threshold)
         roi = depth_axis >= low & depth_axis <= high;   
         depth_roi = depth_axis(roi);
-        if ch==1
-            disp(high)
-        end
         env_roi  = env(roi);
         threshold_mag = max(env_roi)*threshold;
         aboveThreshold = env_roi > threshold_mag;
@@ -104,10 +101,16 @@ function h = calDistance(sorted_data,depth_axis,ch,roi_low,roi_high)
 
     end
 
-    depthThresholdMain = depthThreshold(roi_low_mm, roi_high_mm, env, 0.2);
-    depthThresholdInit = depthThreshold(roi_low_init_mm, roi_high_init_mm, env, 0.2);
+    % Compares the distance between the first and second time that the wave
+    % goes above a threshold
+    depthThresholdMain = depthThreshold(roi_low_mm, roi_high_mm, env, 0.5);
+    depthThresholdInit = depthThreshold(roi_low_init_mm, roi_high_init_mm, env, 0.5);
     h_threshold = depthThresholdMain - depthThresholdInit;
     h = h_threshold; % You can choose to return h_max or h_threshold
+
+    if ch==1
+        disp(depthThresholdInit)
+    end
 
 end
 
