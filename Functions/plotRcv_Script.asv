@@ -27,8 +27,8 @@ acll_ch_intrp = interpft(sorted_data, interp_order*n_samples, 1);
 depth_axis = linspace(0,1,interp_order*n_samples)*Receive.endDepth*wavelength*1e3;
 sorted_data = acll_ch_intrp;
 
-low_idx = 1300;
-high_idx = 1800;
+low_idx = 10;
+high_idx = 75;
 
 low_depth = depth_axis(low_idx);
 high_depth = depth_axis(high_idx);
@@ -78,19 +78,12 @@ function h = calDistance(sorted_data,depth_axis,ch,roi_low,roi_high)
     % Compute analytic signal and envelope
     env = abs(hilbert(data));
 
-    roi_low_init_mm = 0;
-    roi_high_init_mm = 5;
-    
-    roi_low_mm = depth_axis(roi_low);
-    roi_high_mm = depth_axis(roi_high);
-
+    roi_init_low = 0;
+    roi_init_high = 25;
 
     function h = depthThreshold(low,high,env,threshold)
         roi = depth_axis >= low & depth_axis <= high;   
         depth_roi = depth_axis(roi);
-        if ch==1
-            disp(high)
-        end
         env_roi  = env(roi);
         threshold_mag = max(env_roi)*threshold;
         aboveThreshold = env_roi > threshold_mag;
@@ -100,12 +93,10 @@ function h = calDistance(sorted_data,depth_axis,ch,roi_low,roi_high)
         else
             h = min(depthAboveThreshold); % First depth above threshold
         end
-
-
     end
 
-    depthThresholdMain = depthThreshold(roi_low_mm, roi_high_mm, env, 0.2);
-    depthThresholdInit = depthThreshold(roi_low_init_mm, roi_high_init_mm, env, 0.2);
+    depthThresholdMain = depthThreshold(roi_low, roi_high, env, 0.5);
+    depthThresholdInit = depthThreshold(roi_init_low, roi_init_high, env, 0.5);
     h_threshold = depthThresholdMain - depthThresholdInit;
     h = h_threshold; % You can choose to return h_max or h_threshold
 
