@@ -9,6 +9,7 @@ Resource.Parameters.numTransmit = 121; % no. of transmit channels
 Resource.Parameters.connector = 1; % trans. connector to use.
 Resource.Parameters.speedOfSound = 1481;
 Resource.System.UTA = '160-SH';
+Resource.Parameters.verbose = 3;
 
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
@@ -69,8 +70,9 @@ Event(1).tx = 1; % use 1st TX structure.
 Event(1).rcv = 1; 
 Event(1).recon = 0; % no reconstruction.
 Event(1).process = 0; % no processing
-Event(1).seqControl = 1; % transfer data to host
+Event(1).seqControl = [1,2]; % transfer data to host
  SeqControl(1).command = 'transferToHost';
+ SeqControl(2).command = 'triggerOut';
 
 %% Save all the structures to a .mat file.
 save('Verasonics-Acoustic-Tweezer\Data Files\Rx.mat'); 

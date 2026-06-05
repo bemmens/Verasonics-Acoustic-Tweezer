@@ -27,6 +27,7 @@ TPC(1).maxHighVoltage = 10; % Set max voltage
 
 %% Specify TX structure array.
 FocalPtMm = [0 0 50];
+lens_focalPointMm = [0 0 50];
 TX = genTX(FocalPtMm);
 
 %% Specify sequence events.
@@ -94,7 +95,7 @@ function TX = genTX(FocalPtMm)
     Trans = evalin('base','Trans');
 
     pulse_shift = zeros(1,Trans.numelements); 
-%     pulse_shift(2:2:end) = 10; % Shift Half of the elements by n cycles to fill in gaps in TX waveform
+    pulse_shift(2:2:end) = 10; % Shift Half of the elements by n cycles to fill in gaps in TX waveform
 
     TX = repmat(struct('waveform', 1, ...
                    'Origin', zeros(1,3), ...

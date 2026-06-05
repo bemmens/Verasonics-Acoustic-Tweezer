@@ -27,6 +27,9 @@ TPC(1).maxHighVoltage = 10; % Set max voltage
 
 %% Specify TX structure array.
 FocalPtMm = [0 0 50];
+% lens_focalPointMm = [0 0 50];
+% effective_f = FocalPtMm-lens_focalPointMm;
+% disp(effective_f)
 TX = genTX(FocalPtMm);
 
 %% Specify sequence events.
@@ -82,7 +85,7 @@ UI(4).Control = {'UserB4', 'Style', 'VsSlider', ...
 UI(4).Callback = @updateTrapType;
 
 %% Save all the structures to a .mat file.
-name = 'MobileFocus';
+name = 'Mk2_MobileFocus';
 save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
 disp(['Program name: ', name])
 % save('C:\Users\gv19838\OneDrive - University of Bristol\PhD\Vantage-4.8.4-2305101400\Verasonics-Acoustic-Tweezer\Data Files\DIYMk1_MobileFocus_v2.mat');
@@ -117,16 +120,16 @@ function TX = genTX(FocalPtMm)
 
     % Twin Trap
     twinPhase = (Trans.ElementPos(:,1)<0).*0.5;
-    TX(3).Delay = computeTXDelays(TX(3)) + twinPhase'+ pulse_shift;
+    TX(3).Delay = twinPhase'+ pulse_shift;
 
     % RH Vortex
     [RH_VortexDelay,~] = compDelayVortex_ver2(Trans.ElementPos,0,1); % the last input is the topological charge
-    TX(4).Delay = computeTXDelays(TX(4)) + RH_VortexDelay'+ pulse_shift;
+    TX(4).Delay = RH_VortexDelay'+ pulse_shift;
 
     % LH Vortex
 %     LH_VortexDelay = flip(RH_VortexDelay);
     LH_VortexDelay = -(RH_VortexDelay);    
-    TX(5).Delay = computeTXDelays(TX(5)) + LH_VortexDelay'+1+ pulse_shift;
+    TX(5).Delay = LH_VortexDelay'+1+ pulse_shift;
 
 end
 

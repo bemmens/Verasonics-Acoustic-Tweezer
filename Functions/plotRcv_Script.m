@@ -27,7 +27,7 @@ acll_ch_intrp = interpft(sorted_data, interp_order*n_samples, 1);
 depth_axis = linspace(0,1,interp_order*n_samples)*Receive.endDepth*wavelength*1e3;
 sorted_data = acll_ch_intrp;
 
-low_idx = 1300;
+low_idx = 1000;
 high_idx = 1800;
 
 low_depth = depth_axis(low_idx);
