@@ -17,7 +17,7 @@ wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 %% Generate TW
 %pulseLength = 10; % us
 %nHalfCycles = int32(2*pulseLength*Trans.frequency);
-nHalfCycles = 20;
+nHalfCycles = 25;
 TW(1).type = 'parametric';
 TW(1).Parameters = [1.05,1,nHalfCycles,1]; % A, B, C, D
 TW(1).equalize = 0;
@@ -26,7 +26,7 @@ TW(1).equalize = 0;
 TPC(1).maxHighVoltage = 10; % Set max voltage
 
 %% Specify TX structure array.
-FocalPtMm = [0 0 50];
+FocalPtMm = [0 0 20];
 % lens_focalPointMm = [0 0 50];
 % effective_f = FocalPtMm-lens_focalPointMm;
 % disp(effective_f)
@@ -43,7 +43,7 @@ fprintf('Duty cycle: %.2f%%\n', dutyCycle * 100);
 
 SeqControl = genSeqControl(TTNB);
 
-TrapType = 6;
+TrapType = 4;
 Event = genEvent(TrapType);
 
 %% UI Control
@@ -96,6 +96,10 @@ function TX = genTX(FocalPtMm)
 
     Trans = evalin('base','Trans');
 
+    lensFocalPointMm = [0 0 50];
+    wavelength = evalin('base','wavelength');
+    k = 2*pi/wavelength;
+
     pulse_shift = zeros(1,Trans.numelements); 
 %     pulse_shift(2:2:end) = 10; % Shift Half of the elements by n cycles to fill in gaps in TX waveform
 
@@ -116,20 +120,20 @@ function TX = genTX(FocalPtMm)
     TX(1).Delay = zeros(1,Trans.numelements) + pulse_shift;
 
     % Focus
-    TX(2).Delay = computeTXDelays(TX(2))+ pulse_shift;
+    TX(2).Delay = addHybridFocus(Trans.ElementPos,FocalPtMm,lensFocalPointMm,k) + pulse_shift;
 
     % Twin Trap
     twinPhase = (Trans.ElementPos(:,1)<0).*0.5;
-    TX(3).Delay = twinPhase'+ pulse_shift;
+    TX(3).Delay = addHybridFocus(Trans.ElementPos,FocalPtMm,lensFocalPointMm,k) + twinPhase'+ pulse_shift;
 
     % RH Vortex
-    [RH_VortexDelay,~] = compDelayVortex_ver2(Trans.ElementPos,0,1); % the last input is the topological charge
-    TX(4).Delay = RH_VortexDelay'+ pulse_shift;
+    RH_VortexDelay = addVortex(Trans.ElementPos,1); % the last input is the topological charge
+    TX(4).Delay = addHybridFocus(Trans.ElementPos,FocalPtMm,lensFocalPointMm,k) + RH_VortexDelay + pulse_shift;
 
     % LH Vortex
 %     LH_VortexDelay = flip(RH_VortexDelay);
     LH_VortexDelay = -(RH_VortexDelay);    
-    TX(5).Delay = LH_VortexDelay'+1+ pulse_shift;
+    TX(5).Delay = addHybridFocus(Trans.ElementPos,FocalPtMm,lensFocalPointMm,k) + LH_VortexDelay +1+ pulse_shift;
 
 end
 
