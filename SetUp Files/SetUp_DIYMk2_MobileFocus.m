@@ -17,7 +17,7 @@ wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 %% Generate TW
 %pulseLength = 10; % us
 %nHalfCycles = int32(2*pulseLength*Trans.frequency);
-nHalfCycles = 25;
+nHalfCycles = 20;
 TW(1).type = 'parametric';
 TW(1).Parameters = [1.05,1,nHalfCycles,1]; % A, B, C, D
 TW(1).equalize = 0;
@@ -26,7 +26,7 @@ TW(1).equalize = 0;
 TPC(1).maxHighVoltage = 10; % Set max voltage
 
 %% Specify TX structure array.
-FocalPtMm = [0 0 20];
+FocalPtMm = [0 0 50];
 % lens_focalPointMm = [0 0 50];
 % effective_f = FocalPtMm-lens_focalPointMm;
 % disp(effective_f)

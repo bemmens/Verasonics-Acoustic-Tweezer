@@ -85,7 +85,7 @@ UI(4).Callback = @updateRadius;
 % Vortex Period
 UI(5).Control = {'UserB1', 'Style', 'VsSlider', ...
     'Label', 'Period [ms]', ...
-    'SliderMinMaxVal', [0.00005, 0.25, 0.01]*1000, ... % [min,max,step]
+    'SliderMinMaxVal', [0.00005, 0.25, VortexPeriod]*1000, ... % [min,max,step]
     'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.0f'};
 UI(5).Callback = @updatePeriod;
@@ -173,6 +173,11 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     fpoints(:,2) = FocalPtMm(2) + r*sin(angles);
     fpoints(:,3) = FocalPtMm(3);
 
+    lensFocalPointMm = [0 0 50];
+
+    wavelength = evalin('base','wavelength');
+    k = 2*pi/wavelength;
+
     TX = repmat(struct('waveform', 1, ...
                        'Origin', zeros(1,3), ...
                        'focus', 0, ...
@@ -183,7 +188,9 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     
     for i = 1:nFrames
         TX(i).FocalPtMm = fpoints(i,:);
-        TX(i).Delay = computeTXDelays(TX(i));
+%         TX(i).Delay = computeTXDelays(TX(i));
+        TX(i).Delay = addHybridFocus(Trans.ElementPos,fpoints(i,:),lensFocalPointMm,k);
+        
     end
 end
 
@@ -203,9 +210,10 @@ function Event = genEvent(nFrames)
                       'rcv', 0, ...
                       'recon', 0, ...
                       'process', 0, ...
-                      'seqControl', [1,2]), ...
+                      'seqControl', [2]), ...
                       1,nFrames*2);
 
+    Event(1).seqControl = [1,2];
     Event(nFrames).seqControl = [1,2,3];
 
     n = 1;
