@@ -1,4 +1,4 @@
-file = 'RcvTest1';
+file = 'DIYMk2_Day4_1';
 
 load(strcat(file,'.mat'))
 

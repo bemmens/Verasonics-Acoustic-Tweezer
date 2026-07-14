@@ -1,4 +1,4 @@
-in_folder = '/Users/gv19838/Library/CloudStorage/OneDrive-UniversityofBristol/PhD/Vantage-4.8.4-2305101400/Verasonics-Acoustic-Tweezer/RxData/';
+in_folder = '/Users/gv19838/Library/CloudStorage/OneDrive-UniversityofBristol/PhD/Vantage-4.8.4-2305101400/Verasonics-Acoustic-Tweezer BACKUP /RxData/';
 out_folder = '/Users/gv19838/Library/CloudStorage/OneDrive-UniversityofBristol/PhD/Code/PythonRxData/';
 
 files = dir(fullfile(in_folder, '*.mat'));
