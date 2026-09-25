@@ -34,6 +34,8 @@ Resource.System.UTA = '160-SH';
 
 %% Trans
 load 3MHz2D_Trans.mat   % 11x11, 10.8 x 10.8 mm, custom 2D array
+Trans.Connector = 1;
+Trans.frequency = 2.5;
 
 %% Physical parameters
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % m
@@ -41,7 +43,7 @@ lambda_mm  = wavelength*1e3;                                          % mm
 
 %% -------- Bessel-vortex design parameters (read by genTX) ---------------
 Apex       = [0 0];        % axicon apex (x,y) [mm] -> lateral core position
-BesselBeta = 12*pi/180;    % axicon half-angle [rad], <= 14 deg
+BesselBeta = 08*pi/180;    % axicon half-angle [rad], <= 14 deg
 Charge     = 1;            % topological charge ell (-1 .. +1)
 ApodRadius = 5.4;          % circular support radius [mm]
 ApodTaper  = 0.75;         % uniform-core fraction (soft raised-cosine edge)
@@ -50,7 +52,7 @@ DriveScale = 1.0;          % effective amplitude 0..1 (sub-1.6V knob)
 kr       = (2*pi/lambda_mm)*sin(BesselBeta);
 rRing_mm = 1.8412/kr;                              % ell=1 first J1 max
 zMax_mm  = ApodRadius/tan(BesselBeta);
-phiStep  = 360*(0.98/lambda_mm)*sin(BesselBeta);
+phiStep  = 360*(Trans.spacingMm/lambda_mm)*sin(BesselBeta);
 fprintf('Bessel vortex: ring r ~ %.2f mm, range z ~ 0..%.0f mm\n', rRing_mm, zMax_mm);
 fprintf('Axicon phase step per element: %.0f deg (keep < 180)\n', phiStep);
 
@@ -67,7 +69,7 @@ TPC(1).maxHighVoltage = 10;
 TX = genTX();
 
 %% Sequence
-TTNB = 20;   % us
+TTNB = 40;   % us
 period_s  = 1/(Trans.frequency*1e6);
 dutyCycle = ((nHalfCycles/2)*period_s)/(TTNB*1e-6);
 fprintf('Duty cycle: %.2f%%\n', dutyCycle*100);
@@ -101,7 +103,7 @@ UI(5).Control = {'UserB5','Style','VsSlider','Label','DriveScale', ...
 UI(5).Callback = @updateDriveScale;
 
 %% Save
-name = '3MHz_IdealBesselVortex';
+name = 'IdealBesselVortex_2.5MHz';
 save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
 disp(['Program name: ', name])
 
