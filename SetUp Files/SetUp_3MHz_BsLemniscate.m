@@ -167,14 +167,19 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     disp(['nFrames: ',num2str(nFrames)])
 
     % generate List of Focal Points
-    angles = linspace(0,2*pi,nFrames);
     fpoints = zeros(nFrames,3);
-    fpoints(:,1) = FocalPtMm(1) + r*cos(angles)./(1+sin(angles).^2);
-    fpoints(:,2) = FocalPtMm(2) + r*sin(angles).*cos(angles)./(1+sin(angles).^2);
+
+    [fpoints(:,1), fpoints(:,2)] = lemniscatePoints(nFrames, r);
     fpoints(:,3) = FocalPtMm(3);
+
+    % angles = linspace(0,2*pi,nFrames);       
+    % fpoints(:,1) = FocalPtMm(1) + r*cos(angles)./(1+sin(angles).^2);
+    % fpoints(:,2) = FocalPtMm(2) + r*sin(angles).*cos(angles)./(1+sin(angles).^2);
+    % fpoints(:,3) = FocalPtMm(3);
 
     figure(1)
     scatter(fpoints(:,1),fpoints(:,2))
+    axis('equal')
 %     scatter(angles,sin(angles).^2)
 
     TX = repmat(struct('waveform', 1, ...
@@ -248,5 +253,36 @@ function [Event,TX] = updateSequence(r, VortexPeriod, FocalPtMm)
     Control(3).Parameters = {'Event'};
     
     assignin('base', 'Control', Control);
+
+end
+
+function [x, y] = lemniscatePoints(numberOfPoints, a)
+% Generate a fixed number of approximately equally spaced points
+% around a Bernoulli lemniscate.
+
+    if numberOfPoints < 1 || numberOfPoints ~= round(numberOfPoints)
+        error('numberOfPoints must be a positive integer.')
+    end
+
+    if a <= 0
+        error('a must be greater than zero.')
+    end
+
+    % Densely sample the lemniscate
+    t = linspace(0, 2*pi, 100001);
+
+    xDense = a*cos(t) ./ (1 + sin(t).^2);
+    yDense = a*sin(t).*cos(t) ./ (1 + sin(t).^2);
+
+    % Calculate cumulative distance along the curve
+    distance = [0, cumsum(hypot(diff(xDense), diff(yDense)))];
+
+    % Specify equally spaced distances, excluding the repeated endpoint
+    targets = linspace(0, distance(end), numberOfPoints + 1);
+    targets(end) = [];
+
+    % Interpolate coordinates at the target distances
+    x = interp1(distance, xDense, targets);
+    y = interp1(distance, yDense, targets);
 
 end
