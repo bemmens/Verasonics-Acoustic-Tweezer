@@ -30,7 +30,7 @@ TTNB = 20; % us
 
 % GUI Variables
 r = 5; % [mm] Default radius 
-VortexPeriod = 0.01; % [s] Default
+VortexPeriod = 0.005; % [s] Default
 FocalPtMm = [0 0 18];
 
 % Calculate the duty cycle of the sequence
@@ -265,7 +265,7 @@ function [x, y] = lemniscatePoints(numberOfPoints, a)
     end
 
     if a <= 0
-        error('a must be greater than zero.')
+        a = 1e-10;
     end
 
     % Densely sample the lemniscate
