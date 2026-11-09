@@ -11,7 +11,7 @@ Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 Resource.System.UTA = '160-SH';
 
 %% Generate Trans
-load 3MHz2D_Trans.mat % Load transducer model
+load DIYMk1Trans % Load transducer model
 
 %% Physical Parameters
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
@@ -19,7 +19,7 @@ wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6); % in m
 %% Generate TW
 nHalfCycles = 20;
 TW(1).type = 'parametric';
-TW(1).Parameters = [Trans.frequency,1,nHalfCycles,1]; % A, B, C, D
+TW(1).Parameters = [1.05,1,nHalfCycles,1]; % MHz, PulseWidth, NHalfCycles,polarity
 TW(1).equalize = 0;
 
 %% Set Transmit Power
@@ -29,9 +29,9 @@ TPC(1).maxHighVoltage = 10; % Set max voltage
 TTNB = 20; % us
 
 % GUI Variables
-r = 2; % [mm] Default radius 
-VortexPeriod = 0.1; % [s] Default
-FocalPtMm = [0 0 18];
+r = 5; % [mm] Default radius 
+VortexPeriod = 0.001; % [s] Default
+FocalPtMm = [0 0 50];
 
 % Calculate the duty cycle of the sequence
 period = 1 / (Trans.frequency * 1e6); %in seconds
@@ -85,13 +85,13 @@ UI(4).Callback = @updateRadius;
 % Vortex Period
 UI(5).Control = {'UserB1', 'Style', 'VsSlider', ...
     'Label', 'Period [ms]', ...
-    'SliderMinMaxVal', [0.00005, 0.25, 0.01]*1000, ... % [min,max,step]
+    'SliderMinMaxVal', [0.00005, 0.25, VortexPeriod]*1000, ... % [min,max,step]
     'SliderStep', [0.01, 0.1], ...
     'ValueFormat', '%5.0f'};
 UI(5).Callback = @updatePeriod;
 
 %% Save all the structures to a .mat file.
-name = '3MHz_Lemniscate';
+name = 'DIYMk2_Lemniscate';
 save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
 disp(['Program name: ', name])
 
@@ -159,19 +159,60 @@ end
 function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
 
     Trans = evalin('base','Trans');
-
-    nFrames = ceil(VortexPeriod/(TTNB*1e-6));
+ nFrames = ceil(VortexPeriod/(TTNB*1e-6));
     if nFrames<1
         nFrames=1;
     end
-    disp(['nFrames: ',num2str(nFrames)])
 
     % generate List of Focal Points
-    angles = linspace(0,2*pi,nFrames);
-    fpoints = zeros(nFrames,3);
-    fpoints(:,1) = FocalPtMm(1) + r*cos(angles)/(1+sin(angles).^2);
-    fpoints(:,2) = FocalPtMm(2) + r*sin(angles).*cos(angles)/(1+sin(angles).^2);
+    fpoints_old = zeros(nFrames,3);
+
+    [fpoints_old(:,1), fpoints_old(:,2)] = lemniscatePoints(nFrames, r);
+    fpoints_old(:,3) = FocalPtMm(3);
+
+    waypoints = [fpoints_old(:,1), fpoints_old(:,2)];
+    waypoints_new = waypoints;
+%     waypoints_old = waypoints_new;
+    len_new = length(waypoints_new);
+    len_old = len_new+1;
+
+    % Calculate pairwise Euclidean distances.
+    pair_distances = zeros(nFrames);
+
+    for i = 1:nFrames
+        diff = waypoints_new - waypoints_new(i, :);
+        pair_distances(i, :) = sqrt(sum(diff.^2, 2))';
+    end
+
+    % Exclude self-distances and lower triangle.
+    pair_distances(tril(true(nFrames))) = inf;
+
+    dx_threshold = min(pair_distances,[],'all');
+%     dx_threshold = 0;
+
+    while len_new < len_old
+        len_old = length(waypoints_new);
+        waypoints_new = merge_point_pairs_by_distance_v2(waypoints_new, dx_threshold);
+        len_new = length(waypoints_new);
+    end
+
+    fpoints(:,1) = waypoints_new(:,1);
+    fpoints(:,2) = waypoints_new(:,2);
     fpoints(:,3) = FocalPtMm(3);
+
+    nFrames = length(waypoints_new);
+
+    disp(['nFrames: ',num2str(nFrames)])
+    disp(['Period: ',num2str(nFrames*TTNB),'us'])
+
+    figure(1)
+    scatter(fpoints(:,1),fpoints(:,2))
+    axis('equal')
+
+    lensFocalPointMm = [0 0 50];
+
+    wavelength = evalin('base','wavelength');
+    k = 2*pi/wavelength;
 
     TX = repmat(struct('waveform', 1, ...
                        'Origin', zeros(1,3), ...
@@ -183,7 +224,9 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     
     for i = 1:nFrames
         TX(i).FocalPtMm = fpoints(i,:);
-        TX(i).Delay = computeTXDelays(TX(i));
+%         TX(i).Delay = computeTXDelays(TX(i));
+        TX(i).Delay = addHybridFocus(Trans.ElementPos,fpoints(i,:),lensFocalPointMm,k);
+        
     end
 end
 
@@ -207,7 +250,6 @@ function Event = genEvent(nFrames)
                       1,nFrames*2);
 
     Event(1).seqControl = [1,2];
-
     Event(nFrames).seqControl = [1,2,3];
 
     n = 1;
@@ -245,4 +287,123 @@ function [Event,TX] = updateSequence(r, VortexPeriod, FocalPtMm)
     
     assignin('base', 'Control', Control);
 
+end
+
+
+function [x, y] = lemniscatePoints(numberOfPoints, a)
+% Generate a fixed number of approximately equally spaced points
+% around a Bernoulli lemniscate.
+
+    if numberOfPoints < 1 || numberOfPoints ~= round(numberOfPoints)
+        error('numberOfPoints must be a positive integer.')
+    end
+
+    if a <= 0
+        a = 1e-10;
+    end
+
+    % Densely sample the lemniscate
+    t = linspace(0, 2*pi, 100001);
+
+    xDense = a*cos(t) ./ (1 + sin(t).^2);
+    yDense = a*sin(t).*cos(t) ./ (1 + sin(t).^2);
+
+    % Calculate cumulative distance along the curve
+    distance = [0, cumsum(hypot(diff(xDense), diff(yDense)))];
+
+    % Specify equally spaced distances, excluding the repeated endpoint
+    targets = linspace(0, distance(end), numberOfPoints + 1);
+    targets(end) = [];
+
+    % Interpolate coordinates at the target distances
+    x = interp1(distance, xDense, targets);
+    y = interp1(distance, yDense, targets);
+
+end
+
+function merged_points = merge_point_pairs_by_distance_v2(waypoints, dx_threshold)
+%MERGE_POINT_PAIRS_BY_DISTANCE_V2 Merge globally closest waypoint pairs.
+%
+% At each step, the globally closest pair of unused points is selected.
+% If their distance is less than or equal to dx_threshold, the pair is
+% replaced by its centroid.
+%
+% Each point can be merged at most once per pass. Any remaining unpaired
+% points are retained unchanged.
+%
+% Parameters
+% ----------
+% waypoints : n_points-by-n_dimensions array
+%     Coordinates of the input waypoints.
+%
+% dx_threshold : scalar
+%     Maximum Euclidean distance between two points for them to be merged.
+%
+% Returns
+% -------
+% merged_points : n_output_points-by-n_dimensions array
+%     Waypoints after one merge pass.
+%
+% Raises
+% ------
+% Error
+%     If waypoints is not two-dimensional or if dx_threshold is negative.
+
+    points = double(waypoints);
+
+    if ndims(points) ~= 2
+        error('waypoints must have shape (n_points, n_dimensions).');
+    end
+
+    if dx_threshold < 0
+        error('dx_threshold must be non-negative.');
+    end
+
+    n_points = size(points, 1);
+
+    if n_points < 2
+        merged_points = points;
+        return;
+    end
+
+    % Calculate pairwise Euclidean distances.
+    pair_distances = zeros(n_points);
+
+    for i = 1:n_points
+        diff = points - points(i, :);
+        pair_distances(i, :) = sqrt(sum(diff.^2, 2))';
+    end
+
+    % Exclude self-distances and lower triangle.
+    pair_distances(tril(true(n_points))) = inf;
+
+    point_used = false(n_points, 1);
+    merged_points = [];
+
+    while true
+
+        % Exclude pairs containing already-used points.
+        available_distances = pair_distances;
+        available_distances(point_used, :) = inf;
+        available_distances(:, point_used) = inf;
+
+        % Find globally closest available pair.
+        [minimum_distance, linear_idx] = min(available_distances(:));
+
+        if minimum_distance > dx_threshold || isinf(minimum_distance)
+            break;
+        end
+
+        [point_a, point_b] = ind2sub( ...
+            size(available_distances), linear_idx);
+
+        centroid = (points(point_a, :) + points(point_b, :)) / 2;
+        merged_points = [merged_points; centroid]; %#ok<AGROW>
+
+        point_used(point_a) = true;
+        point_used(point_b) = true;
+    end
+
+    % Retain unmerged points.
+    merged_points = [merged_points; points(~point_used, :)];
 end

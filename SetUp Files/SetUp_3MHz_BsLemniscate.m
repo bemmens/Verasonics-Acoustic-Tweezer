@@ -30,7 +30,7 @@ TTNB = 20; % us
 
 % GUI Variables
 r = 5; % [mm] Default radius 
-VortexPeriod = 0.005; % [s] Default
+VortexPeriod = 0.003; % [s] Default
 FocalPtMm = [0 0 18];
 
 % Calculate the duty cycle of the sequence
@@ -164,27 +164,57 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     if nFrames<1
         nFrames=1;
     end
-    disp(['nFrames: ',num2str(nFrames)])
 
     % generate List of Focal Points
-    fpoints = zeros(nFrames,3);
+    fpoints_old = zeros(nFrames,3);
 
-    [fpoints(:,1), fpoints(:,2)] = lemniscatePoints(nFrames, r);
+    [fpoints_old(:,1), fpoints_old(:,2)] = lemniscatePoints(nFrames, r);
+    fpoints_old(:,3) = FocalPtMm(3);
+
+    waypoints = [fpoints_old(:,1), fpoints_old(:,2)];
+    waypoints_new = waypoints;
+%     waypoints_old = waypoints_new;
+    len_new = length(waypoints_new);
+    len_old = len_new+1;
+
+    % Calculate pairwise Euclidean distances.
+    pair_distances = zeros(nFrames);
+
+    for i = 1:nFrames
+        diff = waypoints_new - waypoints_new(i, :);
+        pair_distances(i, :) = sqrt(sum(diff.^2, 2))';
+    end
+
+    % Exclude self-distances and lower triangle.
+    pair_distances(tril(true(nFrames))) = inf;
+
+    dx_threshold = min(pair_distances,[],'all');
+%     dx_threshold = 0;
+
+    while len_new < len_old
+        len_old = length(waypoints_new);
+        waypoints_new = merge_point_pairs_by_distance_v2(waypoints_new, dx_threshold);
+        len_new = length(waypoints_new);
+    end
+
+    fpoints(:,1) = waypoints_new(:,1);
+    fpoints(:,2) = waypoints_new(:,2);
     fpoints(:,3) = FocalPtMm(3);
 
-    dx_threshold = abs(fpoints(2,1) - fpoints(1,1));
+    nFrames = length(waypoints_new);
 
-    [fpoints(:,1), fpoints(:,2)] = merge_point_pairs_by_distance_v2([fpoints(:,1), fpoints(:,2)], dx_threshold);
-
-    % angles = linspace(0,2*pi,nFrames);       
-    % fpoints(:,1) = FocalPtMm(1) + r*cos(angles)./(1+sin(angles).^2);
-    % fpoints(:,2) = FocalPtMm(2) + r*sin(angles).*cos(angles)./(1+sin(angles).^2);
-    % fpoints(:,3) = FocalPtMm(3);
+    disp(['nFrames: ',num2str(nFrames)])
+    disp(['Period: ',num2str(nFrames*TTNB),'us'])
 
     figure(1)
     scatter(fpoints(:,1),fpoints(:,2))
     axis('equal')
 %     scatter(angles,sin(angles).^2)
+
+%     angles = linspace(0,2*pi,nFrames);       
+%     fpoints(:,1) = FocalPtMm(1) + r*cos(angles)./(1+sin(angles).^2);
+%     fpoints(:,2) = FocalPtMm(2) + r*sin(angles).*cos(angles)./(1+sin(angles).^2);
+%     fpoints(:,3) = FocalPtMm(3);
 
     TX = repmat(struct('waveform', 1, ...
                        'Origin', zeros(1,3), ...
