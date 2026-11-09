@@ -172,6 +172,10 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     [fpoints(:,1), fpoints(:,2)] = lemniscatePoints(nFrames, r);
     fpoints(:,3) = FocalPtMm(3);
 
+    dx_threshold = abs(fpoints(2,1) - fpoints(1,1));
+
+    [fpoints(:,1), fpoints(:,2)] = merge_point_pairs_by_distance_v2([fpoints(:,1), fpoints(:,2)], dx_threshold);
+
     % angles = linspace(0,2*pi,nFrames);       
     % fpoints(:,1) = FocalPtMm(1) + r*cos(angles)./(1+sin(angles).^2);
     % fpoints(:,2) = FocalPtMm(2) + r*sin(angles).*cos(angles)./(1+sin(angles).^2);
@@ -285,4 +289,91 @@ function [x, y] = lemniscatePoints(numberOfPoints, a)
     x = interp1(distance, xDense, targets);
     y = interp1(distance, yDense, targets);
 
+end
+
+function merged_points = merge_point_pairs_by_distance_v2(waypoints, dx_threshold)
+%MERGE_POINT_PAIRS_BY_DISTANCE_V2 Merge globally closest waypoint pairs.
+%
+% At each step, the globally closest pair of unused points is selected.
+% If their distance is less than or equal to dx_threshold, the pair is
+% replaced by its centroid.
+%
+% Each point can be merged at most once per pass. Any remaining unpaired
+% points are retained unchanged.
+%
+% Parameters
+% ----------
+% waypoints : n_points-by-n_dimensions array
+%     Coordinates of the input waypoints.
+%
+% dx_threshold : scalar
+%     Maximum Euclidean distance between two points for them to be merged.
+%
+% Returns
+% -------
+% merged_points : n_output_points-by-n_dimensions array
+%     Waypoints after one merge pass.
+%
+% Raises
+% ------
+% Error
+%     If waypoints is not two-dimensional or if dx_threshold is negative.
+
+    points = double(waypoints);
+
+    if ndims(points) ~= 2
+        error('waypoints must have shape (n_points, n_dimensions).');
+    end
+
+    if dx_threshold < 0
+        error('dx_threshold must be non-negative.');
+    end
+
+    n_points = size(points, 1);
+
+    if n_points < 2
+        merged_points = points;
+        return;
+    end
+
+    % Calculate pairwise Euclidean distances.
+    pair_distances = zeros(n_points);
+
+    for i = 1:n_points
+        diff = points - points(i, :);
+        pair_distances(i, :) = sqrt(sum(diff.^2, 2))';
+    end
+
+    % Exclude self-distances and lower triangle.
+    pair_distances(tril(true(n_points))) = inf;
+
+    point_used = false(n_points, 1);
+    merged_points = [];
+
+    while true
+
+        % Exclude pairs containing already-used points.
+        available_distances = pair_distances;
+        available_distances(point_used, :) = inf;
+        available_distances(:, point_used) = inf;
+
+        % Find globally closest available pair.
+        [minimum_distance, linear_idx] = min(available_distances(:));
+
+        if minimum_distance > dx_threshold || isinf(minimum_distance)
+            break;
+        end
+
+        [point_a, point_b] = ind2sub( ...
+            size(available_distances), linear_idx);
+
+        centroid = (points(point_a, :) + points(point_b, :)) / 2;
+        merged_points = [merged_points; centroid]; %#ok<AGROW>
+
+        point_used(point_a) = true;
+        point_used(point_b) = true;
+    end
+
+    % Retain unmerged points.
+    merged_points = [merged_points; points(~point_used, :)];
 end
