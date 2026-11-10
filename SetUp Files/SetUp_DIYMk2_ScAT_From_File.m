@@ -34,6 +34,9 @@ FocalPtMm = [0 0 50];
 ScAT_Path = 'ScAT_Paths/Dove_25mm_384Points.csv';
 ScAT_Rotation = 0;
 
+VortexPeriod = 0; %dummy
+r = 0; %dummy
+
 % Calculate the duty cycle of the sequence
 period = 1 / (Trans.frequency * 1e6); %in seconds
 dutyCycle = ((nHalfCycles/2) * period)/(TTNB*1e-6); % Duty cycle calculation
@@ -206,7 +209,7 @@ function [TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path, ScAT_Rotation)
     end
 
     nFrames = size(pathCoordinates, 1);
-    fpoints(:,1:2) = pathCoordinates;
+    fpoints(:,1:2) = pathCoordinates.*1e3;
     fpoints(:,3) = FocalPtMm(3);
 
     disp(['nFrames: ',num2str(nFrames)])
@@ -274,8 +277,9 @@ end
 
 function [Event,TX] = updateSequence(FocalPtMm)
     % Gen new TX and Events
+    ScAT_Path = evalin('base',ScAT_Path);
     TTNB = evalin('base','TTNB');
-    [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm);
+    [TX, nFrames] = genTX(TTNB, FocalPtMm,ScAT_Path);
     Event = genEvent(nFrames);
 
     % Save updated TX back to base workspace
