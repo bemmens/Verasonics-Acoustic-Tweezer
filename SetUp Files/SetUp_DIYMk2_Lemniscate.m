@@ -200,10 +200,11 @@ function [TX, nFrames] = genTX(TTNB, r, VortexPeriod, FocalPtMm)
     fpoints(:,2) = waypoints_new(:,2);
     fpoints(:,3) = FocalPtMm(3);
 
-    waypoints_table = array2table(waypoints_new, 'VariableNames', {'x_m', 'y_m'});
-    writetable(waypoints_table, 'waypoints.csv');
-
     nFrames = length(waypoints_new);
+
+    waypoints_table = array2table(waypoints_new, 'VariableNames', {'x_m', 'y_m'});
+    fileName = sprintf('lemniscate_%gmm_%dPoints.csv', r, nFrames);
+    writetable(waypoints_table, fileName);
 
     disp(['nFrames: ',num2str(nFrames)])
     disp(['Period: ',num2str(nFrames*TTNB),'us'])
