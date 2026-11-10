@@ -32,13 +32,14 @@ TTNB = 20; % us
 FocalPtMm = [0 0 50];
 
 ScAT_Path = 'ScAT_Paths/Dove_25mm_384Points.csv';
+ScAT_Rotation = 0;
 
 % Calculate the duty cycle of the sequence
 period = 1 / (Trans.frequency * 1e6); %in seconds
 dutyCycle = ((nHalfCycles/2) * period)/(TTNB*1e-6); % Duty cycle calculation
 fprintf('Duty cycle: %.2f%%\n', dutyCycle * 100);
 
-[TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path);
+[TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path, ScAT_Rotation);
 
 %% Specify sequence events.
 SeqControl = genSeqControl(TTNB);
@@ -88,6 +89,13 @@ UI(5).Control = {'UserB6', 'Style', 'VsPushButton', ...
     'Label', 'Reload ScAT Path'};
 UI(5).Callback = @reloadScATPath;
 
+% Rotate ScAT path counterclockwise by 90 degrees
+UI(6).Control = {'Style', 'pushbutton', ...
+    'Units', 'normalized', ...
+    'Position', [0.80, 0.05, 0.18, 0.04], ...
+    'String', 'Rotate 90 CCW', ...
+    'Callback', @rotateScATPath};
+
 %% Save all the structures to a .mat file.
 name = 'DIYMk2_ScAT_From_File';
 save(['Verasonics-Acoustic-Tweezer\Data Files\',name,'.mat']);
@@ -96,6 +104,16 @@ disp(['Program name: ', name])
 %% Functions
 
 function reloadScATPath(hObject, ~)
+    ScAT_Rotation = evalin('base', 'ScAT_Rotation');
+    refreshScATPath(hObject, ScAT_Rotation);
+end
+
+function rotateScATPath(hObject, ~)
+    ScAT_Rotation = mod(evalin('base', 'ScAT_Rotation') + 90, 360);
+    refreshScATPath(hObject, ScAT_Rotation);
+end
+
+function refreshScATPath(hObject, ScAT_Rotation)
     pathEdit = findobj(ancestor(hObject, 'figure'), 'Tag', 'ScATPathEdit');
     if isempty(pathEdit)
         error('ScAT path input control was not found.');
@@ -111,7 +129,7 @@ function reloadScATPath(hObject, ~)
     TTNB = evalin('base', 'TTNB');
     FocalPtMm = evalin('base', 'FocalPtMm');
 
-    [TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path);
+    [TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path, ScAT_Rotation);
     Event = genEvent(nFrames);
 
     Control(1).Command = 'update&Run';
@@ -120,6 +138,7 @@ function reloadScATPath(hObject, ~)
     Control(2).Parameters = {'Event'};
 
     assignin('base', 'ScAT_Path', ScAT_Path);
+    assignin('base', 'ScAT_Rotation', ScAT_Rotation);
     assignin('base', 'TX', TX);
     assignin('base', 'Event', Event);
     assignin('base', 'Control', Control);
@@ -165,7 +184,7 @@ function updateFocalPointZ(~, ~, UIValue)
 end
 
 
-function [TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path)
+function [TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path, ScAT_Rotation)
 
     Trans = evalin('base','Trans');
     pathCoordinates = readmatrix(ScAT_Path);
@@ -174,6 +193,14 @@ function [TX, nFrames] = genTX(TTNB, FocalPtMm, ScAT_Path)
     end
     pathCoordinates = pathCoordinates(:,1:2);
     pathCoordinates = pathCoordinates(all(isfinite(pathCoordinates), 2), :);
+    switch mod(ScAT_Rotation, 360)
+        case 90
+            pathCoordinates = [-pathCoordinates(:,2), pathCoordinates(:,1)];
+        case 180
+            pathCoordinates = -pathCoordinates;
+        case 270
+            pathCoordinates = [pathCoordinates(:,2), -pathCoordinates(:,1)];
+    end
     if isempty(pathCoordinates)
         error('ScAT path file contains no valid X/Y coordinates.');
     end
